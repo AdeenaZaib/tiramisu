@@ -6,13 +6,20 @@ export default function AddItem() {
 
   const submit = async (e) => {
     e.preventDefault();
-    await fetch("http://localhost:8080/api/menu/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    alert("Menu Item Added Successfully!");
-    setForm({ name: "", description: "", price: "", category: "" });
+    try {
+      const res = await fetch("http://localhost:8080/api/menu/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to add menu item');
+      }
+      alert("Menu Item Added Successfully!");
+      setForm({ name: "", description: "", price: "", category: "" });
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
   };
 
   return (

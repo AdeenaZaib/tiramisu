@@ -7,16 +7,29 @@ export default function MenuCatalog() {
 
   const fetchItems = () => {
     fetch("http://localhost:8080/api/menu/all")
-      .then(res => res.json())
-      .then(data => setItems(data));
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch menu items');
+        }
+        return res.json();
+      })
+      .then(data => setItems(data))
+      .catch(err => console.error('Error fetching items:', err));
   };
 
   useEffect(fetchItems, []);
 
   const deleteItem = async (id) => {
     if(confirm("Are you sure?")) {
-      await fetch(`http://localhost:8080/api/menu/delete/${id}`, { method: 'DELETE' });
-      fetchItems();
+      try {
+        const res = await fetch(`http://localhost:8080/api/menu/delete/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          throw new Error('Failed to delete item');
+        }
+        fetchItems();
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
     }
   };
 
