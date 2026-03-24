@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {
+    root: "C:\\Users\\4STAR\\OneDrive\\Documents\\GitHub\\Catering-Management-System\\frontend",
+  },
 };
 
 export default nextConfig;
