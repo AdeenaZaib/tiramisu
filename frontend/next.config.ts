@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Remove the root or set relative path
   turbopack: {
-    root: "C:\\Users\\4STAR\\OneDrive\\Documents\\GitHub\\Catering-Management-System\\frontend",
+    root: ".",  // <-- use current project folder
   },
 };
 
