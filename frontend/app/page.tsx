@@ -25,7 +25,7 @@ export default function MenuCatalog() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-red-800">Our Menu</h1>
+        <h1 className="text-4xl font-bold text-red-800 text-center w-full">Menu Items</h1>
         <select 
           onChange={(e) => setFilter(e.target.value)}
           className="bg-white border-2 border-amber-800 p-2 rounded shadow-sm"
