@@ -19,7 +19,9 @@ body {
   background-color: #f5f5dc;
   color: #2c2c2c;
 }
-
+nav, nav * {
+  font-family: "SherlyKitchen", sans-serif !important;
+}
 h1, h2, h3, h4, h5, h6 {
   font-family: "SherlyKitchen", sans-serif;
 }

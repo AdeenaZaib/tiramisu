@@ -107,7 +107,7 @@ export default function CartPage() {
                     <span className="font-bold text-lg w-6 text-center">{c.quantity}</span>
                     <button
                       onClick={() => updateQty(c.item.id, 1)}
-                      className="w-8 h-8 rounded-full bg-red-800 text-white font-bold hover:bg-red-900 flex items-center justify-center text-4xl"
+                      className="w-8 h-8 rounded-full bg-red-800 text-white font-bold hover:bg-red-900 flex items-center justify-center text-2xl"
                     >+</button>
                   </div>
                   <p className="font-bold text-base">
