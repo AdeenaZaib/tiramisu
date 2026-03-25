@@ -1,6 +1,7 @@
 package com.example.backend.models;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "menu_items")
@@ -15,6 +16,13 @@ public class MenuItem {
     private Double price;
     private String category;
 
+    // New fields to match your Supabase database
+    @Column(name = "is_active")
+    private Boolean isActive;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
     public MenuItem() {}
 
     public MenuItem(String name, String description, Double price, String category) {
@@ -24,6 +32,18 @@ public class MenuItem {
         this.category = category;
     }
 
+    // Automatically set default values right before saving to the database
+    @PrePersist
+    protected void onCreate() {
+        if (this.isActive == null) {
+            this.isActive = true;
+        }
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+    }
+
+    // Getters and Setters
     public Long getId() { return id; }
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -33,4 +53,8 @@ public class MenuItem {
     public void setPrice(Double price) { this.price = price; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

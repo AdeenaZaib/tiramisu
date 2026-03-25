@@ -26,4 +26,33 @@ public class MenuController {
     public List<MenuItem> getAllMenuItems() {
         return menuItemRepository.findAll();
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteMenuItem(@PathVariable Long id) {
+
+        if(!menuItemRepository.existsById(id)){
+            return ResponseEntity.notFound().build();
+        }
+
+        menuItemRepository.deleteById(id);
+
+        return ResponseEntity.ok("Menu item deleted");
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updatedItem) {
+
+        return menuItemRepository.findById(id)
+                .map(menuItem -> {
+                    menuItem.setName(updatedItem.getName());
+                    menuItem.setDescription(updatedItem.getDescription());
+                    menuItem.setPrice(updatedItem.getPrice());
+                    menuItem.setCategory(updatedItem.getCategory());
+
+                    MenuItem savedItem = menuItemRepository.save(menuItem);
+
+                    return ResponseEntity.ok(savedItem);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }
