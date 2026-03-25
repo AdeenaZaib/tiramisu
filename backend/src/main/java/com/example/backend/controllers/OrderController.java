@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -38,6 +39,9 @@ public class OrderController {
                     .findById(item.getMenuItem().getId())
                     .orElseThrow(() -> new RuntimeException("Menu Item not found"));
 
+            // CRITICAL FIX: Snapshot the price at the time of ordering for the DB
+            item.setPriceAtOrder(menu.getPrice());
+            
             subtotal += menu.getPrice() * item.getQuantity();
 
             item.setOrder(order);
@@ -47,21 +51,18 @@ public class OrderController {
         double total = subtotal + tax;
 
         order.setSubtotal(subtotal);
-        order.setTax(tax);
+        order.setTax(tax); 
         order.setTotalCost(total);
         order.setStatus("Pending");
 
         return orderRepository.save(order);
     }
 
-
     // CMS-08 Get Orders for Customer
     @GetMapping("/customer/{name}")
     public List<Order> getCustomerOrders(@PathVariable String name){
-
         return orderRepository.findByCustomerName(name);
     }
-
 
     // CMS-09 Update Order Status
     @PutMapping("/{id}/status")
@@ -70,9 +71,15 @@ public class OrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record Not Found"));
 
-        order.setStatus(status);
+        // CRITICAL FIX: Strip hidden JSON quotes from the frontend request
+        order.setStatus(status.replace("\"", ""));
 
         return orderRepository.save(order);
     }
 
+    // CMS-09 Admin View All Orders
+    @GetMapping("/all")
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
 }

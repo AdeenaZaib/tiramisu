@@ -31,18 +31,32 @@ export default function ConfirmOrder() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
+      // Create the payload to perfectly match the Java models
+      const payload = {
+        customerName: form.customerName, // Ensure this matches Order.java
+        contact: form.contactNumber,
+        eventDate: form.eventDate,
+        deliveryAddress: form.deliveryAddress,
+        items: cart.map((c) => ({          // Changed from 'orderItems' to 'items'
+          quantity: c.quantity,
+          menuItem: {                      // Nested object to match Java's @ManyToOne
+            id: c.item.id
+          }
+        })),
+      };
+
       const res = await fetch("http://localhost:8080/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerName: form.customerName,
-          contact: form.contactNumber,
-          eventDate: form.eventDate,
-          deliveryAddress: form.deliveryAddress,
-          orderItems: cart.map((c) => ({ menuItemId: c.item.id, quantity: c.quantity })),
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to place order");
+      
+      if (!res.ok) {
+        // Grab the error message from the backend if it fails
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to place order");
+      }
+      
       const data = await res.json();
       setOrderId(data.id);
       localStorage.removeItem("cart");

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 type Order = {
   id: number;
   customerName: string;
-  contactNumber: string;
+  contact: string;
   eventDate: string;
   deliveryAddress: string;
   status: string;
@@ -55,7 +55,7 @@ export default function ManagerOrders() {
       const res = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(newStatus),
       });
       if (!res.ok) throw new Error("Failed to update status");
       setOrders((prev) =>
@@ -122,7 +122,7 @@ export default function ManagerOrders() {
                     </span>
                   </div>
                   <p className="font-bold text-lg uppercase truncate">{order.customerName}</p>
-                  <p className="text-gray-500 text-sm">{order.contactNumber}</p>
+                  <p className="text-gray-500 text-sm">{order.contact}</p>
                   <p className="text-gray-500 text-sm truncate">{order.deliveryAddress}</p>
                   <div className="flex gap-4 mt-2 text-xs text-gray-400">
                     <span>

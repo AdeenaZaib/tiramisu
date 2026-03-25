@@ -2,109 +2,150 @@ package com.example.backend.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String customerName;
-    private String contact;
+    @Column(name = "customer_id")
+    private Long customerId;
 
+    @Column(name = "event_date")
     private LocalDate eventDate;
 
+    @Column(name = "delivery_address")
     private String deliveryAddress;
 
-    private double subtotal;
-    private double tax;
-    private double totalCost;
+    @Column(name = "customer_name")
+    private String customerName;
 
-    private String status;
+    private String contact;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderItem> items;
+    private String status = "Pending";
+    private Double subtotal = 0.0;
+    
+    @Column(name = "tax_amount")
+    private Double taxAmount = 0.0;
+    
+    @Column(name = "total_cost")
+    private Double totalCost = 0.0;
 
-    public Order(){}
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    // THE FIX: Initialize the list to prevent NullPointerExceptions
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> items = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) this.createdAt = LocalDateTime.now();
+        if (this.status == null) this.status = "Pending";
+        
+        // Ensure bidirectional relationship is set before saving
+        for (OrderItem item : items) {
+            item.setOrder(this);
+        }
+    }
 
     // getters and setters
-    public Long getId() {
-        return id;
+    public Long getId() { 
+        return id; 
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public Long getCustomerId() { 
+        return customerId; 
+    }  
+
+    public void setCustomerId(Long customerId) { 
+        this.customerId = customerId; 
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public LocalDate getEventDate() { 
+        return eventDate; 
     }
 
-    public String getContact() {
-        return contact;
+    public void setEventDate(LocalDate eventDate) { 
+        this.eventDate = eventDate; 
     }
 
-    public void setContact(String contact) {
-        this.contact = contact;
+    public String getDeliveryAddress() { 
+        return deliveryAddress; 
     }
 
-    public LocalDate getEventDate() {
-        return eventDate;
+    public void setDeliveryAddress(String deliveryAddress) { 
+        this.deliveryAddress = deliveryAddress; 
     }
 
-    public void setEventDate(LocalDate eventDate) {
-        this.eventDate = eventDate;
+    public String getStatus() { 
+        return status; 
     }
 
-    public String getDeliveryAddress() {
-        return deliveryAddress;
+    public void setStatus(String status) { 
+        this.status = status; 
     }
 
-    public void setDeliveryAddress(String deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
+    public Double getSubtotal() { 
+        return subtotal; 
     }
 
-    public double getSubtotal() {
-        return subtotal;
+    public void setSubtotal(Double subtotal) { 
+        this.subtotal = subtotal; 
     }
 
-    public void setSubtotal(double subtotal) {
-        this.subtotal = subtotal;
+    public Double getTax() { 
+        return taxAmount; 
     }
 
-    public double getTax() {
-        return tax;
+    public void setTax(Double taxAmount) { 
+        this.taxAmount = taxAmount; 
     }
 
-    public void setTax(double tax) {
-        this.tax = tax;
+    public Double getTotalCost() { 
+        return totalCost; 
     }
 
-    public double getTotalCost() {
-        return totalCost;
-    }
-
-    public void setTotalCost(double totalCost) {
+    public void setTotalCost(Double totalCost) { 
         this.totalCost = totalCost;
     }
 
-    public String getStatus() {
-        return status;
+    public LocalDateTime getCreatedAt() { 
+        return createdAt; 
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCreatedAt(LocalDateTime createdAt) { 
+        this.createdAt = createdAt; 
     }
 
-    public List<OrderItem> getItems() {
-        return items;
+    public List<OrderItem> getItems() { 
+        return items; 
     }
 
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
+    public void setItems(List<OrderItem> items) { 
+        this.items = items; 
     }
 
+    public String getCustomerName() { 
+        return customerName; 
+    }
+
+    public void setCustomerName(String customerName) { 
+        this.customerName = customerName; 
+    }
     
+    public String getContact() { 
+        return contact; 
+    }
+
+    public void setContact(String contact) { 
+        this.contact = contact; 
+    }
 }
