@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Custom Font */
 @font-face {
   font-family: "SherlyKitchen";
   src: url("/fonts/Sherly-Kitchen.ttf") format("truetype");
@@ -8,13 +7,22 @@
   font-style: normal;
 }
 
-/* Apply font globally */
+@font-face {
+  font-family: "OpenSans";
+  src: url("/fonts/open-sans.regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
-    font-family: "SherlyKitchen", sans-serif !important;
+  font-family: "OpenSans", sans-serif;
   background-color: #f5f5dc;
   color: #2c2c2c;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: "SherlyKitchen", sans-serif;
+}
 /* Root Colors */
 :root {
   --background: #ffffff;
