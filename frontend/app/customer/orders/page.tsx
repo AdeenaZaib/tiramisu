@@ -29,7 +29,9 @@ export default function MyOrders() {
     setLoading(true);
     setSearched(false);
     try {
-      const res = await fetch(`/api/orders/customer/${customerName}`);
+      const res = await fetch(
+        `http://localhost:8080/api/orders/customer/${encodeURIComponent(customerName)}`
+      );
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       setOrders(data);
@@ -46,7 +48,6 @@ export default function MyOrders() {
     <div className="max-w-4xl mx-auto">
       <h1 className="text-4xl font-bold text-red-800 text-center mb-8">My Orders</h1>
 
-      {/* Customer Name lookup */}
       <div className="bg-white p-6 rounded-xl border border-amber-200 shadow-md mb-8 flex gap-4 items-end">
         <div className="flex-1">
           <label className="block text-sm font-semibold text-amber-900 mb-1 uppercase tracking-wide">
@@ -69,7 +70,6 @@ export default function MyOrders() {
         </button>
       </div>
 
-      {/* Results */}
       {searched && orders.length === 0 && (
         <div className="text-center text-gray-500 py-12 bg-white rounded-xl border border-amber-100">
           <p className="text-lg">You have no catering orders at this time.</p>

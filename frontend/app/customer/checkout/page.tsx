@@ -60,18 +60,15 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const eventDate = new Date(form.eventDate);
     if (eventDate <= new Date()) {
       alert("Invalid Date: Event date must be in the future.");
       return;
     }
-
     if (cart.length === 0) {
       alert("Please add at least one item to your order.");
       return;
     }
-
     setLoading(true);
     try {
       const payload = {
@@ -81,13 +78,11 @@ export default function Checkout() {
         deliveryAddress: form.deliveryAddress,
         items: cart.map((c) => ({ menuItemId: c.item.id, quantity: c.quantity })),
       };
-
       const res = await fetch("http://localhost:8080/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) throw new Error("Failed to place order");
       const data = await res.json();
       setSuccessMessage(`Order placed! Your Order ID is: ${data.orderId || data.id}`);
@@ -111,7 +106,6 @@ export default function Checkout() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left: Menu Selection */}
         <div>
           <h2 className="text-2xl font-bold text-amber-900 mb-4 border-b-2 border-red-800 pb-2">
             Select Items
@@ -161,7 +155,6 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Right: Order Form + Summary */}
         <div>
           <h2 className="text-2xl font-bold text-amber-900 mb-4 border-b-2 border-red-800 pb-2">
             Event Details
@@ -196,10 +189,11 @@ export default function Checkout() {
               required
             />
 
-            {/* Order Summary */}
             {cart.length > 0 && (
               <div className="bg-white p-4 rounded-lg border border-amber-200 shadow-sm">
-                <h3 className="font-bold text-amber-900 mb-2 uppercase text-sm tracking-wide">Order Summary</h3>
+                <h3 className="font-bold text-amber-900 mb-2 uppercase text-sm tracking-wide">
+                  Order Summary
+                </h3>
                 {cart.map((c) => (
                   <div key={c.item.id} className="flex justify-between text-sm py-1">
                     <span>{c.item.name} × {c.quantity}</span>
