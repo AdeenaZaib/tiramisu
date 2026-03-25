@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface MenuItem {
   id: number;
@@ -12,13 +13,12 @@ interface MenuItem {
 export default function MenuCatalog() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [filter, setFilter] = useState("All");
+  const router = useRouter();
 
   const fetchItems = () => {
     fetch("http://localhost:8080/api/menu/all")
       .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to fetch menu items');
-        }
+        if (!res.ok) throw new Error('Failed to fetch menu items');
         return res.json();
       })
       .then(data => setItems(data))
@@ -28,12 +28,10 @@ export default function MenuCatalog() {
   useEffect(fetchItems, []);
 
   const deleteItem = async (id: number) => {
-    if(confirm("Are you sure?")) {
+    if (confirm("Are you sure?")) {
       try {
         const res = await fetch(`http://localhost:8080/api/menu/delete/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
-          throw new Error('Failed to delete item');
-        }
+        if (!res.ok) throw new Error('Failed to delete item');
         fetchItems();
       } catch (error) {
         alert("Error: " + (error instanceof Error ? error.message : 'Unknown error'));
@@ -47,7 +45,7 @@ export default function MenuCatalog() {
     <div className="max-w-5xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-red-800 text-center w-full">Menu Items</h1>
-        <select 
+        <select
           onChange={(e) => setFilter(e.target.value)}
           className="bg-white border-2 border-amber-800 p-2 rounded shadow-sm"
         >
@@ -67,13 +65,23 @@ export default function MenuCatalog() {
             </div>
             <p className="text-gray-700 my-2">{item.description}</p>
             <div className="flex justify-between items-center mt-4">
-              <span className="text-xs font-semibold bg-amber-100 px-2 py-1 rounded text-amber-900">{item.category}</span>
-              <button 
-                onClick={() => deleteItem(item.id)}
-                className="text-red-600 hover:text-red-800 text-sm font-bold uppercase"
-              >
-                Delete
-              </button>
+              <span className="text-xs font-semibold bg-amber-100 px-2 py-1 rounded text-amber-900">
+                {item.category}
+              </span>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => router.push(`/admin/menu/edit/${item.id}`)}
+                  className="text-amber-700 hover:text-amber-900 text-sm font-bold uppercase"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteItem(item.id)}
+                  className="text-red-600 hover:text-red-800 text-sm font-bold uppercase"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         ))}
