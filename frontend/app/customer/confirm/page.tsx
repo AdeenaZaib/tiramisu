@@ -72,7 +72,7 @@ export default function ConfirmOrder() {
   if (orderId) {
     return (
       <div className="max-w-lg mx-auto text-center py-20">
-        <div className="text-6xl mb-4">🎉</div>
+       
         <h1 className="text-3xl font-bold text-green-700 mb-2">Order Placed!</h1>
         <p className="text-gray-500 mb-1">Your Order ID is</p>
         <p className="text-5xl font-bold text-amber-900 mb-8">#{orderId}</p>
@@ -137,9 +137,9 @@ export default function ConfirmOrder() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button onClick={() => router.push("/customer/checkout")} className="flex-1 border-2 border-amber-800 text-amber-900 font-bold py-3 rounded hover:bg-amber-50">← Edit Details</button>
+          <button onClick={() => router.push("/customer/checkout")} className="flex-1 border-2 border-amber-800 text-amber-900 font-bold py-3 rounded hover:bg-amber-50">Edit Details</button>
           <button onClick={handleConfirm} disabled={loading} className="flex-1 bg-red-800 text-white font-bold py-3 rounded hover:bg-red-900 disabled:opacity-50">
-            {loading ? "Placing Order..." : "✓ Confirm & Place Order"}
+            {loading ? "Placing Order..." : "Confirm & Place Order"}
           </button>
         </div>
       </div>

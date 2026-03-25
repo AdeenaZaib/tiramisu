@@ -108,7 +108,7 @@ export default function CustomerMenu() {
                   : "bg-red-800 hover:bg-red-900 text-white"
               }`}
             >
-              {added === item.id ? "✓ Added to Cart!" : "+ Add to Cart"}
+              {added === item.id ? "Added to Cart!" : "Add to Cart"}
             </button>
           </div>
         ))}

@@ -88,7 +88,7 @@ export default function CheckoutDetails() {
               <textarea placeholder="Full delivery address" className="w-full p-3 border rounded border-gray-300 focus:border-red-800 outline-none resize-none" rows={3} value={form.deliveryAddress} onChange={(e) => setForm({ ...form, deliveryAddress: e.target.value })} required />
             </div>
             <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => router.push("/customer/cart")} className="flex-1 border-2 border-amber-800 text-amber-900 font-bold py-3 rounded hover:bg-amber-50">← Back to Cart</button>
+              <button type="button" onClick={() => router.push("/customer/cart")} className="flex-1 border-2 border-amber-800 text-amber-900 font-bold py-3 rounded hover:bg-amber-50">Back to Cart</button>
               <button type="submit" className="flex-1 bg-red-800 text-white font-bold py-3 rounded hover:bg-red-900">Review Order</button>
             </div>
           </form>
