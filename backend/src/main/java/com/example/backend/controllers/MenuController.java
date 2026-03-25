@@ -38,4 +38,21 @@ public class MenuController {
 
         return ResponseEntity.ok("Menu item deleted");
     }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updatedItem) {
+
+        return menuItemRepository.findById(id)
+                .map(menuItem -> {
+                    menuItem.setName(updatedItem.getName());
+                    menuItem.setDescription(updatedItem.getDescription());
+                    menuItem.setPrice(updatedItem.getPrice());
+                    menuItem.setCategory(updatedItem.getCategory());
+
+                    MenuItem savedItem = menuItemRepository.save(menuItem);
+
+                    return ResponseEntity.ok(savedItem);
+                })
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }
