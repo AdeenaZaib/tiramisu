@@ -19,17 +19,17 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function MyOrders() {
-  const [customerId, setCustomerId] = useState("");
+  const [customerName, setCustomerName] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const fetchOrders = async () => {
-    if (!customerId.trim()) return;
+    if (!customerName.trim()) return;
     setLoading(true);
     setSearched(false);
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/customer/${customerId}`);
+      const res = await fetch(`/api/orders/customer/${customerName}`);
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       setOrders(data);
@@ -46,17 +46,17 @@ export default function MyOrders() {
     <div className="max-w-4xl mx-auto">
       <h1 className="text-4xl font-bold text-red-800 text-center mb-8">My Orders</h1>
 
-      {/* Customer ID lookup */}
+      {/* Customer Name lookup */}
       <div className="bg-white p-6 rounded-xl border border-amber-200 shadow-md mb-8 flex gap-4 items-end">
         <div className="flex-1">
           <label className="block text-sm font-semibold text-amber-900 mb-1 uppercase tracking-wide">
-            Enter Your Customer ID
+            Enter Your Name
           </label>
           <input
-            placeholder="e.g. 1"
+            placeholder="e.g. John Doe"
             className="w-full p-3 border rounded border-gray-300 focus:border-red-800 outline-none bg-white"
-            value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchOrders()}
           />
         </div>
