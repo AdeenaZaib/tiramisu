@@ -13,7 +13,7 @@ interface MenuItem {
 export default function EditMenuItem() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id;
+  const id = params.id as string;
 
   const [form, setForm] = useState<MenuItem>({
     id: 0,

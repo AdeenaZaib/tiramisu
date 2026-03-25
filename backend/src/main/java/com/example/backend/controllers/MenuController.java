@@ -39,20 +39,29 @@ public class MenuController {
         return ResponseEntity.ok("Menu item deleted");
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updatedItem) {
-
+    @GetMapping("/{id}")
+    public ResponseEntity<MenuItem> getMenuItemById(@PathVariable Long id) {
         return menuItemRepository.findById(id)
-                .map(menuItem -> {
-                    menuItem.setName(updatedItem.getName());
-                    menuItem.setDescription(updatedItem.getDescription());
-                    menuItem.setPrice(updatedItem.getPrice());
-                    menuItem.setCategory(updatedItem.getCategory());
+                .map(item -> ResponseEntity.ok(item))
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-                    MenuItem savedItem = menuItemRepository.save(menuItem);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<MenuItem> updateMenuItem(@PathVariable Long id, @RequestBody MenuItem updatedDetails) {
+        return menuItemRepository.findById(id)
+                .map(existingItem -> {
+                    // Update the fields with the new data from React
+                    existingItem.setName(updatedDetails.getName());
+                    existingItem.setDescription(updatedDetails.getDescription());
+                    existingItem.setPrice(updatedDetails.getPrice());
+                    existingItem.setCategory(updatedDetails.getCategory());
+                    
+                    // Notice we DO NOT touch the 'createdAt' or 'isActive' fields 
+                    // so they remain safely unchanged in the database.
 
+                    MenuItem savedItem = menuItemRepository.save(existingItem);
                     return ResponseEntity.ok(savedItem);
                 })
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElse(ResponseEntity.notFound().build());
     }
 }
