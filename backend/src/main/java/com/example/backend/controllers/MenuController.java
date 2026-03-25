@@ -26,4 +26,16 @@ public class MenuController {
     public List<MenuItem> getAllMenuItems() {
         return menuItemRepository.findAll();
     }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteMenuItem(@PathVariable Long id) {
+
+        if(!menuItemRepository.existsById(id)){
+            return ResponseEntity.notFound().build();
+        }
+
+        menuItemRepository.deleteById(id);
+
+        return ResponseEntity.ok("Menu item deleted");
+    }
 }
