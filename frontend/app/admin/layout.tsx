@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </Link>
             <Link
               href="/admin"
-              className="bg-red-800 hover:bg-red-900 text-white px-3 py-1 rounded transition-colors"
+              className="hover:underline hover:text-amber-200"
             >
               Manager Dashboard
             </Link>

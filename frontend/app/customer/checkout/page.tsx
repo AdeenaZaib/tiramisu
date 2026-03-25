@@ -89,7 +89,7 @@ export default function CheckoutDetails() {
             </div>
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => router.push("/customer/cart")} className="flex-1 border-2 border-amber-800 text-amber-900 font-bold py-3 rounded hover:bg-amber-50">← Back to Cart</button>
-              <button type="submit" className="flex-1 bg-red-800 text-white font-bold py-3 rounded hover:bg-red-900">Review Order →</button>
+              <button type="submit" className="flex-1 bg-red-800 text-white font-bold py-3 rounded hover:bg-red-900">Review Order</button>
             </div>
           </form>
         </div>
