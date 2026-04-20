@@ -82,4 +82,52 @@ public class OrderController {
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
+
+    // CMS-12: Get a single order for the Digital Invoice
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+    }
+
+    // CMS-11: Customer Cancels a Pending Order
+    @PutMapping("/{id}/cancel")
+    public Order cancelOrder(@PathVariable Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        if (!order.getStatus().equals("Pending")) {
+            throw new RuntimeException("Only pending orders can be cancelled.");
+        }
+        
+        order.setStatus("Cancelled");
+        return orderRepository.save(order);
+    }
+
+    // CMS-13: Customer Submits Feedback for a Delivered Order
+    @PutMapping("/{id}/feedback")
+    public Order submitFeedback(@PathVariable Long id, @RequestBody Order feedbackData) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (!order.getStatus().equals("Delivered")) {
+            throw new RuntimeException("Feedback can only be left for delivered orders.");
+        }
+
+        order.setRating(feedbackData.getRating());
+        order.setFeedback(feedbackData.getFeedback());
+        return orderRepository.save(order);
+    }
+
+    // CMS-14: Manager Analytics Dashboard Data
+    @GetMapping("/analytics")
+    public java.util.Map<String, Object> getAnalytics() {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        
+        Double totalRevenue = orderRepository.sumTotalRevenue();
+        stats.put("totalOrders", orderRepository.countActiveOrders());
+        stats.put("totalRevenue", totalRevenue != null ? totalRevenue : 0.0);
+        
+        return stats;
+    }
 }

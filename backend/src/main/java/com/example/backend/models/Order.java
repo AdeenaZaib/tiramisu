@@ -41,6 +41,11 @@ public class Order {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    private Integer rating;
+    
+    @Column(length = 500)
+    private String feedback;
+
     // THE FIX: Initialize the list to prevent NullPointerExceptions
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> items = new ArrayList<>();
@@ -147,5 +152,20 @@ public class Order {
 
     public void setContact(String contact) { 
         this.contact = contact; 
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getFeedback() {
+        return feedback;
+    }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
     }
 }
