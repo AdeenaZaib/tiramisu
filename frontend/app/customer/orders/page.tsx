@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Order = {
   id: number;
@@ -19,64 +20,73 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function MyOrders() {
-  const [customerName, setCustomerName] = useState("");
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [searched, setSearched] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ fullName: string } | null>(null);
 
-  const fetchOrders = async () => {
-    if (!customerName.trim()) return;
-    setLoading(true);
-    setSearched(false);
-    try {
-      const res = await fetch(
-        `http://localhost:8080/api/orders/customer/${encodeURIComponent(customerName)}`
-      );
-      if (!res.ok) throw new Error("Failed to fetch orders");
-      const data = await res.json();
-      setOrders(data);
-    } catch (err: any) {
-      alert("Error: " + err.message);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-      setSearched(true);
+  useEffect(() => {
+    // 1. Check who is logged in
+    const storedUser = localStorage.getItem("user");
+    
+    if (!storedUser) {
+      // If no one is logged in, kick them back to the login page
+      router.push("/auth/login");
+      return;
     }
-  };
+
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
+
+    // 2. Fetch only THIS user's orders automatically
+    const fetchMyOrders = async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/orders/customer/${encodeURIComponent(parsedUser.fullName)}`);
+        if (!res.ok) throw new Error("Failed to fetch orders");
+        
+        const data = await res.json();
+        
+        // Sort newest event dates first
+        data.sort((a: Order, b: Order) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+        setOrders(data);
+      } catch (err: any) {
+        console.error("Error:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyOrders();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto text-center py-20">
+        <p className="text-xl text-amber-900 font-bold animate-pulse">Loading your orders...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold text-red-800 text-center mb-8">My Orders</h1>
+      <h1 className="text-4xl font-bold text-red-800 text-center mb-2">My Orders</h1>
+      <p className="text-center text-gray-500 mb-8 font-semibold">
+        Welcome back, {user?.fullName}
+      </p>
 
-      <div className="bg-white p-6 rounded-xl border border-amber-200 shadow-md mb-8 flex gap-4 items-end">
-        <div className="flex-1">
-          <label className="block text-sm font-semibold text-amber-900 mb-1 uppercase tracking-wide">
-            Enter Your Name
-          </label>
-          <input
-            placeholder="e.g. John Doe"
-            className="w-full p-3 border rounded border-gray-300 focus:border-red-800 outline-none bg-white"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && fetchOrders()}
-          />
+      {/* Empty State */}
+      {orders.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl border border-amber-200 shadow-sm">
+          <p className="text-lg text-gray-500 mb-4">You have no catering orders at this time.</p>
+          <button 
+            onClick={() => router.push("/customer/menu")}
+            className="bg-red-800 text-white font-bold py-2 px-6 rounded hover:bg-red-900 transition"
+          >
+            Browse Menu
+          </button>
         </div>
-        <button
-          onClick={fetchOrders}
-          disabled={loading}
-          className="bg-red-800 text-white font-bold px-6 py-3 rounded hover:bg-red-900 transition-colors disabled:opacity-60"
-        >
-          {loading ? "Loading..." : "View Orders"}
-        </button>
-      </div>
-
-      {searched && orders.length === 0 && (
-        <div className="text-center text-gray-500 py-12 bg-white rounded-xl border border-amber-100">
-          <p className="text-lg">You have no catering orders at this time.</p>
-        </div>
-      )}
-
-      {orders.length > 0 && (
+      ) : (
+        /* Orders List */
         <div className="space-y-4">
           {orders.map((order) => (
             <div

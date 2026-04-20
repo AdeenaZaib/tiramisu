@@ -31,9 +31,17 @@ export default function ConfirmOrder() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
+      // 1. Safely grab the user
+      const storedUser = typeof window !== "undefined" ? window.localStorage.getItem("user") : null;
+      const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
+
+      // 2. THE FIX: The Bouncer Check
+      if (!loggedInUser || !loggedInUser.fullName) {
+        throw new Error("You must be logged in to place an order.");
+      }
       // Create the payload to perfectly match the Java models
       const payload = {
-        customerName: form.customerName, // Ensure this matches Order.java
+        customerName: loggedInUser.fullName, // Ensure this matches Order.java
         contact: form.contactNumber,
         eventDate: form.eventDate,
         deliveryAddress: form.deliveryAddress,

@@ -45,7 +45,7 @@ export default function HomePage() {
 
           {/* Customer Card */}
           <button
-            onClick={() => router.push("/customer")}
+            onClick={() => router.push("/auth")}
             className="group bg-white border-2 border-amber-800 rounded-2xl p-8 shadow-md hover:shadow-xl hover:bg-amber-800 transition-all duration-300 text-left"
           >
             <div className="text-4xl mb-4">🍽️</div>
@@ -63,7 +63,7 @@ export default function HomePage() {
 
           {/* Admin Card */}
           <button
-           onClick={() => router.push("/admin")}
+           onClick={() => router.push("/auth")}
             className="group bg-white border-2 border-red-800 rounded-2xl p-8 shadow-md hover:shadow-xl hover:bg-red-800 transition-all duration-300 text-left"
           >
             <div className="text-4xl mb-4">⚙️</div>
