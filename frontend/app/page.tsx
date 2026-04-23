@@ -57,7 +57,7 @@ export default function HomePage() {
           height: 76, display: "flex", alignItems: "center", justifyContent: "space-between"
         }}>
           <span className="font-display" style={{ fontSize: 26, letterSpacing: 2, color: "#2C2416", fontWeight: 400 }}>
-            La Tavola
+            tiramisu.
           </span>
           <div style={{ display: "flex", gap: 36, fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(44,36,22,0.5)", fontWeight: 500 }}>
             {["about", "services", "gallery", "menu"].map(l => (
@@ -373,9 +373,9 @@ export default function HomePage() {
       {/* ── Footer ── */}
       <footer style={{ background: "#1A140D", color: "rgba(253,250,245,0.45)", padding: "44px 60px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 20 }}>
-          <span className="font-display" style={{ fontSize: 24, color: "rgba(253,250,245,0.75)", fontWeight: 300, letterSpacing: 2 }}>La Tavola</span>
+          <span className="font-display" style={{ fontSize: 24, color: "rgba(253,250,245,0.75)", fontWeight: 300, letterSpacing: 2 }}>tiramisu.</span>
           <span style={{ fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase" }}>
-            © {new Date().getFullYear()} La Tavola Catering
+            © {new Date().getFullYear()} tiramisu catering
           </span>
           <div style={{ display: "flex", gap: 28, fontSize: 10, letterSpacing: "0.22em", textTransform: "uppercase" }}>
             {["services", "menu", "gallery"].map(l => (

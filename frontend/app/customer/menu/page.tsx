@@ -158,7 +158,7 @@ function MenuCatalogInner() {
             ← {fromLanding ? "Back" : "Dashboard"}
           </button>
           
-          <span className="font-display" style={{ fontSize: 24, letterSpacing: 2, color: "#2C2416", fontWeight: 400 }}>La Tavola</span>
+          <span className="font-display" style={{ fontSize: 24, letterSpacing: 2, color: "#2C2416", fontWeight: 400 }}>tiramisu.</span>
           
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
             {!fromLanding && (
@@ -288,8 +288,8 @@ function MenuCatalogInner() {
       {/* ── Footer ── */}
       <footer style={{ background: "#1A140D", color: "rgba(253,250,245,0.4)", padding: "40px 60px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <span className="font-display" style={{ fontSize: 22, color: "rgba(253,250,245,0.7)", fontWeight: 300, letterSpacing: 2 }}>La Tavola</span>
-          <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase" }}>© {new Date().getFullYear()} La Tavola Catering</span>
+          <span className="font-display" style={{ fontSize: 22, color: "rgba(253,250,245,0.7)", fontWeight: 300, letterSpacing: 2 }}>tiramisu.</span>
+          <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase" }}>© {new Date().getFullYear()} tiramisu.</span>
         </div>
       </footer>
     </div>
