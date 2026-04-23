@@ -16,12 +16,16 @@ public class MenuItem {
     private Double price;
     private String category;
 
+
     // New fields to match your Supabase database
     @Column(name = "is_active")
     private Boolean isActive;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "item_type")
+    private String itemType;
 
     public MenuItem() {}
 
@@ -41,6 +45,10 @@ public class MenuItem {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
+
+        if (this.itemType == null) {
+            this.itemType = "main";  
+        }
     }
 
     // Getters and Setters
@@ -57,4 +65,8 @@ public class MenuItem {
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getItemType() { return itemType; }
+    public void setItemType(String itemType) { 
+        this.itemType = itemType; 
+    }
 }
