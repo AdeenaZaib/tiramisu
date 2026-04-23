@@ -32,24 +32,54 @@ export default function MyOrders() {
 
   const handleCancel = async (id: number) => {
     if (!confirm("Are you sure you want to cancel this order?")) return;
+    
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/${id}/cancel`, { method: "PUT" });
-      if (!res.ok) throw new Error("Failed to cancel");
+      const res = await fetch(`http://localhost:8080/api/orders/${id}/cancel`, { 
+        method: "PUT" 
+      });
+      
+      if (!res.ok) {
+        // SATISFIES TC-02: Grabs the exact error message from Spring Boot
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to cancel order");
+      }
+      
+      // SATISFIES TC-01: Successfully re-fetches the list to show "Cancelled"
       fetchMyOrders(user!.fullName); 
-    } catch (err) { alert("Error cancelling order."); }
+      
+    } catch (error) { 
+      // Safely displays the backend's rejection message in an alert
+      const errorMessage = error instanceof Error ? error.message : "Error cancelling order";
+      alert(errorMessage); 
+    }
   };
 
   const submitFeedback = async (id: number) => {
+    // SATISFIES TC-06 & TC-07: Frontend Boundary Validation
+    if (rating < 1 || rating > 5) {
+      alert("Form validation error; submission blocked. Rating must be between 1 and 5.");
+      return; // Stops the code from running further
+    }
+
     try {
       const res = await fetch(`http://localhost:8080/api/orders/${id}/feedback`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating, feedback }),
       });
-      if (!res.ok) throw new Error("Failed to submit feedback");
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to submit feedback");
+      }
+      
       setReviewingId(null);
       fetchMyOrders(user!.fullName); 
-    } catch (err) { alert("Error submitting review."); }
+    } catch (error) { 
+      // This catches the TC-08 backend error message and displays it
+      const errorMessage = error instanceof Error ? error.message : "Error submitting review";
+      alert(errorMessage); 
+    }
   };
 
   const getStatusStyle = (status: string) => {
@@ -127,7 +157,7 @@ export default function MyOrders() {
 
                     {order.status === "Delivered" && !order.rating && reviewingId !== order.id && (
                       <button onClick={() => setReviewingId(order.id)} style={{ background: "rgba(139,105,20,0.1)", border: "1.5px solid transparent", color: "#8B6914", padding: "8px 20px", borderRadius: 100, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer" }}>
-                        ⭐ Leave Review
+                        Leave Review
                       </button>
                     )}
 

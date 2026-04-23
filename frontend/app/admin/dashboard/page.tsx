@@ -54,13 +54,19 @@ export default function ManagerOrders() {
     try {
       const res = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newStatus),
+        headers: {
+          "Content-Type": "application/json", 
+        },
+        body: JSON.stringify({ status: newStatus }), 
       });
-      if (!res.ok) throw new Error("Failed to update status");
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-      );
+
+      if (!res.ok) {
+        throw new Error("Failed to update status");
+      }
+
+      // THE FIX: Re-fetch the orders to instantly update the UI!
+      fetchOrders();
+
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
