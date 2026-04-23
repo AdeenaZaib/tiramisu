@@ -29,10 +29,51 @@ function MenuCatalogInner() {
   const searchParams = useSearchParams();
   const fromLanding = searchParams.get("from") === "landing";
 
+  // NEW: Grab the Event ID from the URL
+  const targetEventId = searchParams.get("eventId");
+  const [eventName, setEventName] = useState<string | null>(null);
+
   const [menuItems, setMenuItems] = useState<FrontendMenuItem[]>([]);
   const [cuisines, setCuisines] = useState<string[]>(["All"]);
   const [activeCuisine, setActiveCuisine] = useState("All");
   const [loading, setLoading] = useState(true);
+
+  // NEW: Find the event name to show in the UI
+  useEffect(() => {
+    if (targetEventId) {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        const drafts = JSON.parse(localStorage.getItem(`drafts_${parsedUser.email}`) || "[]");
+        const targetDraft = drafts.find((d: any) => d.id === targetEventId);
+        if (targetDraft) setEventName(targetDraft.name);
+      }
+    }
+  }, [targetEventId]);
+
+  // NEW: Add Item to Specific Event
+  const handleAddToEvent = (item: FrontendMenuItem) => {
+    if (!targetEventId) {
+      router.push("/customer/events"); // Force them to pick an event first
+      return;
+    }
+    
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const drafts = JSON.parse(localStorage.getItem(`drafts_${storedUser.email}`) || "[]");
+    const draftIndex = drafts.findIndex((d: any) => d.id === targetEventId);
+    
+    if (draftIndex !== -1) {
+      // Clean up the price string (remove '$') for math calculation
+      const numericPrice = parseFloat(item.price.replace('$', ''));
+      
+      drafts[draftIndex].items.push({
+        menuItem: { id: item.id, name: item.name, price: numericPrice },
+        quantity: 1 // Default to 1 quantity
+      });
+      localStorage.setItem(`drafts_${storedUser.email}`, JSON.stringify(drafts));
+      alert(`${item.name} added to ${drafts[draftIndex].name}!`);
+    }
+  };
 
   // FETCH DATA FROM SPRING BOOT BACKEND
   useEffect(() => {
@@ -143,42 +184,6 @@ function MenuCatalogInner() {
         .order-btn:hover { background: #8B6914; }
       `}</style>
 
-      {/* ── Dynamic Header ── */}
-      <header style={{
-        background: "rgba(253,250,245,0.96)", backdropFilter: "blur(14px)",
-        borderBottom: "1px solid rgba(44,36,22,0.07)",
-        position: "sticky", top: 0, zIndex: 40,
-      }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={() => router.push(fromLanding ? "/" : "/customer")}
-            style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, color: "rgba(44,36,22,0.5)", fontFamily: "'Jost', sans-serif", fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 500, padding: 0, transition: "color 0.2s" }}
-            onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "#2C2416"}
-            onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = "rgba(44,36,22,0.5)"}
-          >
-            ← {fromLanding ? "Back" : "Dashboard"}
-          </button>
-          
-          <span className="font-display" style={{ fontSize: 24, letterSpacing: 2, color: "#2C2416", fontWeight: 400 }}>tiramisu.</span>
-          
-          <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            {!fromLanding && (
-              <button onClick={() => router.push("/customer/orders")}
-                style={{ background: "none", border: "none", color: "rgba(44,36,22,0.45)", fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 500, cursor: "pointer", fontFamily: "'Jost', sans-serif", transition: "color 0.2s" }}
-                onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "#2C2416"}
-                onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = "rgba(44,36,22,0.45)"}
-              >My Orders</button>
-            )}
-            <button onClick={() => router.push("/auth/login")}
-              style={{ background: "transparent", border: "1.5px solid rgba(44,36,22,0.25)", color: "#2C2416", padding: "9px 24px", borderRadius: 100, fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", fontFamily: "'Jost', sans-serif", transition: "all 0.3s ease" }}
-              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "#2C2416"; b.style.color = "#FDFAF5"; }}
-              onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "transparent"; b.style.color = "#2C2416"; }}
-            >
-              {fromLanding ? "Login" : "Logout"}
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* ── Hero banner ── */}
       <section style={{ position: "relative", height: 320, overflow: "hidden", background: "#2C2416" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(44,36,22,0.8) 0%, rgba(44,36,22,0.4) 100%)" }} />
@@ -266,8 +271,11 @@ function MenuCatalogInner() {
                       <span className="font-display" style={{ fontSize: 20, fontWeight: 400, color: "#2C2416" }}>
                         {item.price}
                       </span>
-                      <button className="order-btn" onClick={() => router.push(fromLanding ? "/auth/login" : `/customer/checkout`)}>
-                        {fromLanding ? "Login to Order" : "Add to Order"}
+                      <button 
+                        className="order-btn" 
+                        onClick={() => fromLanding ? router.push("/auth/login") : handleAddToEvent(item)}
+                      >
+                        {fromLanding ? "Login to Order" : "Add to Event"}
                       </button>
                     </div>
                   </div>

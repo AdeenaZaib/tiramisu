@@ -2,132 +2,169 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Order = {
-  id: number;
-  customerName: string;
-  eventDate: string;
-  deliveryAddress: string;
-  status: string;
-  totalCost: number;
-  createdAt: string;
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  Pending: "bg-yellow-100 text-yellow-800",
-  Confirmed: "bg-blue-100 text-blue-800",
-  Delivered: "bg-green-100 text-green-800",
-  Cancelled: "bg-red-100 text-red-800",
-};
+type Order = { id: number; customerName: string; eventDate: string; deliveryAddress: string; status: string; totalCost: number; createdAt: string; rating?: number; feedback?: string; };
 
 export default function MyOrders() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<{ fullName: string } | null>(null);
+  
+  const [reviewingId, setReviewingId] = useState<number | null>(null);
+  const [rating, setRating] = useState(5);
+  const [feedback, setFeedback] = useState("");
+
+  const fetchMyOrders = async (name: string) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/orders/customer/${encodeURIComponent(name)}`);
+      const data = await res.json();
+      data.sort((a: Order, b: Order) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+      setOrders(data);
+    } catch (err) { console.error(err); }
+  };
 
   useEffect(() => {
-    // 1. Check who is logged in
-    const storedUser = localStorage.getItem("user");
-    
-    if (!storedUser) {
-      // If no one is logged in, kick them back to the login page
-      router.push("/auth/login");
-      return;
-    }
-
+    const storedUser = typeof window !== "undefined" ? window.localStorage.getItem("user") : null;
+    if (!storedUser) { router.push("/auth/login"); return; }
     const parsedUser = JSON.parse(storedUser);
     setUser(parsedUser);
-
-    // 2. Fetch only THIS user's orders automatically
-    const fetchMyOrders = async () => {
-      try {
-        const res = await fetch(`http://localhost:8080/api/orders/customer/${encodeURIComponent(parsedUser.fullName)}`);
-        if (!res.ok) throw new Error("Failed to fetch orders");
-        
-        const data = await res.json();
-        
-        // Sort newest event dates first
-        data.sort((a: Order, b: Order) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
-        setOrders(data);
-      } catch (err: any) {
-        console.error("Error:", err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMyOrders();
+    fetchMyOrders(parsedUser.fullName);
   }, [router]);
 
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto text-center py-20">
-        <p className="text-xl text-amber-900 font-bold animate-pulse">Loading your orders...</p>
-      </div>
-    );
-  }
+  const handleCancel = async (id: number) => {
+    if (!confirm("Are you sure you want to cancel this order?")) return;
+    try {
+      const res = await fetch(`http://localhost:8080/api/orders/${id}/cancel`, { method: "PUT" });
+      if (!res.ok) throw new Error("Failed to cancel");
+      fetchMyOrders(user!.fullName); 
+    } catch (err) { alert("Error cancelling order."); }
+  };
+
+  const submitFeedback = async (id: number) => {
+    try {
+      const res = await fetch(`http://localhost:8080/api/orders/${id}/feedback`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, feedback }),
+      });
+      if (!res.ok) throw new Error("Failed to submit feedback");
+      setReviewingId(null);
+      fetchMyOrders(user!.fullName); 
+    } catch (err) { alert("Error submitting review."); }
+  };
+
+  const getStatusStyle = (status: string) => {
+    switch(status) {
+      case 'Pending': return { bg: "rgba(139,105,20,0.1)", color: "#8B6914" };
+      case 'Confirmed': return { bg: "rgba(44,36,22,0.08)", color: "#2C2416" };
+      case 'Delivered': return { bg: "rgba(90,112,48,0.15)", color: "#5A7030" };
+      case 'Cancelled': return { bg: "rgba(168,50,50,0.1)", color: "#a83232" };
+      default: return { bg: "rgba(0,0,0,0.05)", color: "#000" };
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold text-red-800 text-center mb-2">My Orders</h1>
-      <p className="text-center text-gray-500 mb-8 font-semibold">
-        Welcome back, {user?.fullName}
-      </p>
+    <div style={{ background: "#FDFAF5", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Jost', sans-serif", color: "#2C2416" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap');
+        .font-display { font-family: 'Cormorant Garamond', serif; }
+        .btn-outline { background: transparent; border: 1.5px solid rgba(44,36,22,0.2); color: #2C2416; padding: 8px 20px; border-radius: 100px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-outline:hover { border-color: #2C2416; }
+      `}</style>
 
-      {/* Empty State */}
-      {orders.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-amber-200 shadow-sm">
-          <p className="text-lg text-gray-500 mb-4">You have no catering orders at this time.</p>
-          <button 
-            onClick={() => router.push("/customer/menu")}
-            className="bg-red-800 text-white font-bold py-2 px-6 rounded hover:bg-red-900 transition"
-          >
-            Browse Menu
-          </button>
+      {/* ── Hero Banner ── */}
+      <section style={{ position: "relative", height: 320, overflow: "hidden", background: "#2C2416", flexShrink: 0 }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(44,36,22,0.8) 0%, rgba(44,36,22,0.4) 100%)" }} />
+        <div style={{ position: "relative", zIndex: 2, height: "100%", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", padding: "0 60px", maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
+            <div style={{ height: 1, width: 40, background: "rgba(253,250,245,0.3)" }} />
+            <span style={{ fontSize: 11, letterSpacing: "0.4em", textTransform: "uppercase", color: "rgba(253,250,245,0.45)", fontWeight: 500 }}>Explore</span>
+          </div>
+          <h1 className="font-display" style={{ fontSize: "clamp(2.8rem,6vw,5.5rem)", fontWeight: 300, color: "#FDFAF5", lineHeight: 1, marginBottom: 16 }}>
+            My Bookings
+          </h1>
+          <p style={{ fontSize: 14, color: "rgba(253,250,245,0.5)", fontWeight: 300, letterSpacing: "0.05em", maxWidth: 400 }}>
+            Manage your confirmed orders, invoices, and feedback.
+          </p>
         </div>
-      ) : (
-        /* Orders List */
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="bg-white p-6 rounded-lg border-l-8 border-amber-900 shadow-md"
-            >
-              <div className="flex justify-between items-start flex-wrap gap-2">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-1">
-                    Order #{order.id}
-                  </p>
-                  <p className="font-bold text-lg uppercase">{order.customerName}</p>
-                  <p className="text-gray-600 text-sm">{order.deliveryAddress}</p>
+      </section>
+
+      {/* ── Main Content ── */}
+      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "60px 24px", flex: "1 0 auto", width: "100%" }}>
+        {orders.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "80px 20px", color: "rgba(44,36,22,0.35)" }}>
+            <div style={{ fontSize: 56, marginBottom: 20 }}>📅</div>
+            <p className="font-display" style={{ fontSize: 24, fontWeight: 300 }}>You have no official bookings yet.</p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 24 }}>
+            {orders.map((order) => {
+              const statusStyle = getStatusStyle(order.status);
+              return (
+                <div key={order.id} style={{ background: "#fff", border: "1px solid rgba(44,36,22,0.08)", padding: 32, borderRadius: 8, boxShadow: "0 10px 30px rgba(44,36,22,0.03)" }}>
+                  
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, borderBottom: "1px solid rgba(44,36,22,0.05)", paddingBottom: 24 }}>
+                    <div>
+                      <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(44,36,22,0.4)", fontWeight: 600 }}>Order #{order.id}</span>
+                      <h3 className="font-display" style={{ fontSize: 26, margin: "8px 0" }}>{order.eventName || "Catering Event"}</h3>
+                      <p style={{ fontSize: 14, color: "rgba(44,36,22,0.6)" }}>Event Date: {new Date(order.eventDate).toLocaleDateString()}</p>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ background: statusStyle.bg, color: statusStyle.color, padding: "6px 16px", borderRadius: 100, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, display: "inline-block", marginBottom: 12 }}>
+                        {order.status}
+                      </span>
+                      <p style={{ fontSize: 24, fontWeight: 500 }}>${order.totalCost?.toFixed(2)}</p>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    <button onClick={() => router.push(`/customer/invoice/${order.id}`)} className="btn-outline">View Invoice</button>
+
+                    {order.status === "Pending" && (
+                      <button onClick={() => handleCancel(order.id)} style={{ background: "transparent", border: "1.5px solid rgba(168,50,50,0.3)", color: "#a83232", padding: "8px 20px", borderRadius: 100, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", transition: "all 0.3s" }}>
+                        Cancel
+                      </button>
+                    )}
+
+                    {order.status === "Delivered" && !order.rating && reviewingId !== order.id && (
+                      <button onClick={() => setReviewingId(order.id)} style={{ background: "rgba(139,105,20,0.1)", border: "1.5px solid transparent", color: "#8B6914", padding: "8px 20px", borderRadius: 100, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer" }}>
+                        ⭐ Leave Review
+                      </button>
+                    )}
+
+                    {order.rating && (
+                      <div style={{ padding: "8px 20px", fontSize: 13, color: "#8B6914", fontWeight: 600 }}>
+                        {"★".repeat(order.rating)} ({order.rating}/5)
+                      </div>
+                    )}
+                  </div>
+
+                  {reviewingId === order.id && (
+                    <div style={{ marginTop: 24, padding: 24, background: "rgba(139,105,20,0.05)", borderRadius: 8, border: "1px dashed rgba(139,105,20,0.2)" }}>
+                      <p style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, color: "#8B6914", marginBottom: 12 }}>Rate your experience</p>
+                      <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                        <input type="number" min="1" max="5" value={rating} onChange={(e) => setRating(Number(e.target.value))} style={{ width: 80, padding: 12, border: "1px solid rgba(44,36,22,0.15)", borderRadius: 4, fontFamily: "'Jost', sans-serif" }} />
+                        <input type="text" placeholder="Share your feedback..." value={feedback} onChange={(e) => setFeedback(e.target.value)} style={{ flex: 1, padding: 12, border: "1px solid rgba(44,36,22,0.15)", borderRadius: 4, fontFamily: "'Jost', sans-serif" }} />
+                      </div>
+                      <div style={{ display: "flex", gap: 12 }}>
+                        <button onClick={() => submitFeedback(order.id)} style={{ background: "#2C2416", color: "#FDFAF5", border: "none", padding: "8px 24px", borderRadius: 100, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer" }}>Submit</button>
+                        <button onClick={() => setReviewingId(null)} style={{ background: "transparent", border: "none", color: "rgba(44,36,22,0.5)", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>Cancel</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="text-right">
-                  <span
-                    className={`text-xs font-bold px-3 py-1 rounded-full ${
-                      STATUS_COLORS[order.status] || "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                  <p className="text-red-700 font-bold text-xl mt-2">
-                    ${order.totalCost?.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-6 mt-4 text-sm text-gray-500 border-t border-gray-100 pt-3">
-                <span>
-                  <span className="font-semibold text-gray-700">Event Date:</span>{" "}
-                  {new Date(order.eventDate).toLocaleDateString()}
-                </span>
-                <span>
-                  <span className="font-semibold text-gray-700">Ordered:</span>{" "}
-                  {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "—"}
-                </span>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* ── Footer ── */}
+      <footer style={{ background: "#1A140D", color: "rgba(253,250,245,0.4)", padding: "40px 60px", flexShrink: 0 }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          <span className="font-display" style={{ fontSize: 22, color: "rgba(253,250,245,0.7)", fontWeight: 300, letterSpacing: 2 }}>tiramisu.</span>
+          <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase" }}>© {new Date().getFullYear()} tiramisu.</span>
         </div>
-      )}
+      </footer>
     </div>
   );
 }
