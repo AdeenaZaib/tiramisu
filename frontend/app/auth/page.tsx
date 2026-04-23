@@ -189,7 +189,7 @@ export default function AuthPage() {
           style={{ fontSize: 26, letterSpacing: 2, color: "#2C2416", fontWeight: 400, cursor: "pointer" }}
           onClick={() => router.push("/")}
         >
-          La Tavola
+          tiramisu.
         </span>
         <div style={{ width: 60 }} /> {/* spacer */}
       </nav>
@@ -261,7 +261,7 @@ export default function AuthPage() {
               perfected.
             </h2>
             <p style={{ color: "rgba(253,250,245,0.4)", fontSize: 14, lineHeight: 1.9, fontWeight: 300, maxWidth: 340, marginBottom: 52 }}>
-              Join La Tavola to explore our curated menus, place orders, and let us craft an unforgettable experience for your next event.
+              Join us to explore our curated menus, place orders, and let us craft an unforgettable experience for your next event.
             </p>
             {/* Stats */}
             <div style={{ display: "flex", gap: 44 }}>
