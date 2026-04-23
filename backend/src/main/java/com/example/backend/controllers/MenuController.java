@@ -57,6 +57,7 @@ public class MenuController {
                     existingItem.setCategory(updatedDetails.getCategory());
                     existingItem.setItemType(updatedDetails.getItemType());
                     
+                    
                     // Notice we DO NOT touch the 'createdAt' or 'isActive' fields 
                     // so they remain safely unchanged in the database.
 
