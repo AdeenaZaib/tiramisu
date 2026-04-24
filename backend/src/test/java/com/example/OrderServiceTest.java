@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -175,5 +176,120 @@ public class OrderServiceTest {
             () -> orderService.calculateTotalCost(order)
         );
         assertTrue(ex.getMessage().toLowerCase().contains("at least 1"));
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CMS-11 — Cancel Pending Order
+    // ════════════════════════════════════════════════════════════════════
+
+    @Test @org.junit.jupiter.api.Order(9)
+    @DisplayName("CMS-11 | testCancelOrder_PendingStatus_SuccessfullyCancels")
+    void testCancelOrder_PendingStatus_SuccessfullyCancels() {
+        Order pendingOrder = validOrder();
+        pendingOrder.setStatus("Pending");
+        
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(pendingOrder));
+        when(orderRepository.save(any(Order.class))).thenReturn(pendingOrder);
+
+        Order cancelled = orderService.cancelOrder(1L);
+
+        assertEquals("Cancelled", cancelled.getStatus());
+        verify(orderRepository, times(1)).save(pendingOrder);
+    }
+
+    @Test @org.junit.jupiter.api.Order(10)
+    @DisplayName("CMS-11 | testCancelOrder_ConfirmedStatus_ThrowsException")
+    void testCancelOrder_ConfirmedStatus_ThrowsException() {
+        Order confirmedOrder = validOrder();
+        confirmedOrder.setStatus("Confirmed"); // Kitchen is already cooking!
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(confirmedOrder));
+
+        IllegalStateException ex = assertThrows(
+            IllegalStateException.class,
+            () -> orderService.cancelOrder(1L)
+        );
+        assertTrue(ex.getMessage().contains("cannot be cancelled at this stage"));
+        verify(orderRepository, never()).save(any());
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CMS-12 — View Digital Invoice
+    // ════════════════════════════════════════════════════════════════════
+
+    @Test @org.junit.jupiter.api.Order(11)
+    @DisplayName("CMS-12 | testGetInvoice_NonExistentID_ThrowsNotFound")
+    void testGetInvoice_NonExistentID_ThrowsNotFound() {
+        when(orderRepository.findById(99L)).thenReturn(Optional.empty());
+
+        NoSuchElementException ex = assertThrows(
+            NoSuchElementException.class,
+            () -> orderService.getInvoice(99L)
+        );
+        assertEquals("Error: Invoice not found.", ex.getMessage());
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CMS-13 — Submit Order Feedback
+    // ════════════════════════════════════════════════════════════════════
+
+    @Test @org.junit.jupiter.api.Order(12)
+    @DisplayName("CMS-13 | testSubmitFeedback_NotDelivered_ThrowsException")
+    void testSubmitFeedback_NotDelivered_ThrowsException() {
+        Order pendingOrder = validOrder();
+        pendingOrder.setStatus("Pending"); // Cannot review an order that hasn't arrived
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(pendingOrder));
+
+        IllegalStateException ex = assertThrows(
+            IllegalStateException.class,
+            () -> orderService.submitFeedback(1L, 5, "Great food!")
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("delivered"));
+    }
+
+    @Test @org.junit.jupiter.api.Order(13)
+    @DisplayName("CMS-13 | testSubmitFeedback_OutOfBoundsRating_ThrowsException")
+    void testSubmitFeedback_OutOfBoundsRating_ThrowsException() {
+        Order deliveredOrder = validOrder();
+        deliveredOrder.setStatus("Delivered");
+
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(deliveredOrder));
+
+        IllegalArgumentException ex = assertThrows(
+            IllegalArgumentException.class,
+            () -> orderService.submitFeedback(1L, 6, "Amazing!") // 6 is out of bounds
+        );
+        assertTrue(ex.getMessage().contains("between 1 and 5"));
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // CMS-14 — Manager Analytics Dashboard
+    // ════════════════════════════════════════════════════════════════════
+
+    @Test @org.junit.jupiter.api.Order(14)
+    @DisplayName("CMS-14 | testGetAnalytics_ValidData_ReturnsAggregatedMap")
+    void testGetAnalytics_ValidData_ReturnsAggregatedMap() {
+        when(orderRepository.sumTotalRevenue()).thenReturn(850.50);
+        when(orderRepository.countActiveOrders()).thenReturn(5L);
+
+        Map<String, Object> analytics = orderService.getAnalytics();
+
+        assertEquals(850.50, analytics.get("totalRevenue"));
+        assertEquals(5L, analytics.get("totalOrders"));
+    }
+
+    @Test @org.junit.jupiter.api.Order(15)
+    @DisplayName("CMS-14 | testGetAnalytics_EmptyDatabase_ReturnsGracefulZeros")
+    void testGetAnalytics_EmptyDatabase_ReturnsGracefulZeros() {
+        // If DB has no orders, SQL SUM() returns null
+        when(orderRepository.sumTotalRevenue()).thenReturn(null);
+        when(orderRepository.countActiveOrders()).thenReturn(0L);
+
+        Map<String, Object> analytics = orderService.getAnalytics();
+
+        // Must fallback to 0.0 gracefully to prevent frontend crashes
+        assertEquals(0.0, analytics.get("totalRevenue"));
+        assertEquals(0L, analytics.get("totalOrders"));
     }
 }

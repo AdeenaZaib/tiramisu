@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Map;
 
 @Service
 public class OrderService {
@@ -78,5 +80,58 @@ public class OrderService {
             total += item.getPriceAtOrder() * item.getQuantity();
         }
         return total;
+    }
+
+    // ── CMS-11: Cancel Pending Order ──────────────────────────────────────
+
+    public Order cancelOrder(Long id) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Order not found with id: " + id));
+
+        if (!"Pending".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalStateException("Error: Order cannot be cancelled at this stage.");
+        }
+
+        order.setStatus("Cancelled");
+        return orderRepository.save(order);
+    }
+
+    // ── CMS-12: View Digital Invoice ──────────────────────────────────────
+
+    public Order getInvoice(Long id) {
+        return orderRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Error: Invoice not found."));
+    }
+
+    // ── CMS-13: Submit Order Feedback ─────────────────────────────────────
+
+    public Order submitFeedback(Long id, Integer rating, String feedback) {
+        Order order = orderRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("Order not found with id: " + id));
+
+        if (!"Delivered".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalStateException("Feedback can only be left for delivered orders.");
+        }
+        if (rating == null || rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5.");
+        }
+
+        order.setRating(rating);
+        order.setFeedback(feedback);
+        return orderRepository.save(order);
+    }
+
+    // ── CMS-14: Manager Analytics Dashboard ───────────────────────────────
+
+    public Map<String, Object> getAnalytics() {
+        Double totalRevenue = orderRepository.sumTotalRevenue();
+        Long totalOrders = orderRepository.countActiveOrders();
+
+        Map<String, Object> analytics = new HashMap<>();
+        // Graceful fallback if database queries return null (empty database)
+        analytics.put("totalRevenue", totalRevenue != null ? totalRevenue : 0.0);
+        analytics.put("totalOrders", totalOrders != null ? totalOrders : 0L);
+        
+        return analytics;
     }
 }
