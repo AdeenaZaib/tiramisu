@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 type MenuItem = {
   id: number;
@@ -360,18 +361,19 @@ export default function AdminMenuPage() {
                 All dishes of all cuisines available.
               </p>
             </div>
-            <button
-              onClick={() => router.push("/admin/menu/add")}
+            <Link 
+              href="/admin/menu/add"
               style={{
-                background: showAdd ? "rgba(253,250,245,0.1)" : "#8B6914",
+                background: "#8B6914",
                 color: "#FDFAF5", border: "1.5px solid rgba(139,105,20,0.6)",
-                padding: "13px 32px", borderRadius: 100,
+                padding: "13px 32px", borderRadius: 100, textDecoration: "none",
                 fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 600,
                 cursor: "pointer", fontFamily: "'Jost', sans-serif", transition: "all 0.3s",
+                display: "inline-block"
               }}
             >
               + Add Dish
-            </button>
+            </Link>
           </div>
         </div>
       </section>

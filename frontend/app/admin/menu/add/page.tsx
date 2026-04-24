@@ -172,7 +172,7 @@ export default function AddDishPage() {
       `}</style>
 
       {/* ── Header ── */}
-      <header style={{
+      {/* <header style={{
         background: "rgba(253,250,245,0.96)", backdropFilter: "blur(14px)",
         borderBottom: "1px solid rgba(44,36,22,0.07)",
         position: "sticky", top: 0, zIndex: 40,
@@ -191,7 +191,7 @@ export default function AddDishPage() {
 
           <span style={{ fontSize: 10, letterSpacing: "0.28em", textTransform: "uppercase", color: "rgba(44,36,22,0.3)", fontWeight: 600 }}>Admin</span>
         </div>
-      </header>
+      </header> */}
 
       {/* ── Centered layout ── */}
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "60px 32px 100px" }}>

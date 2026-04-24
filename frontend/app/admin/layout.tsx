@@ -51,7 +51,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             })}
           </div>
 
-          <button onClick={() => router.push("/auth")}
+          <button onClick={() => {
+              localStorage.removeItem("user"); // <-- Ensures admin session is cleared
+              router.push("/"); // <-- Changed to redirect to landing page
+            }}
             style={{ background: "transparent", border: "1.5px solid rgba(44,36,22,0.25)", color: "#2C2416", padding: "9px 24px", borderRadius: 100, fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", fontWeight: 600, cursor: "pointer", fontFamily: "'Jost', sans-serif", transition: "all 0.3s ease" }}
             onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "#2C2416"; b.style.color = "#FDFAF5"; }}
             onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "transparent"; b.style.color = "#2C2416"; }}
