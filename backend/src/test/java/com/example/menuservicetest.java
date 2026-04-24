@@ -16,7 +16,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("Sprint 1 — Menu & Catalog Management Tests")
-public class MenuServiceTest {
+public class MenuServiceTest { 
 
     @Mock
     private MenuItemRepository menuRepository;
