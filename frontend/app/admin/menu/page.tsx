@@ -79,16 +79,44 @@ export default function AdminMenuPage() {
   const cancelEdit = () => { setEditingId(null); };
 
   const saveEdit = async (id: number) => {
-    setSaving(true);
     setError("");
+  
+    // ✅ VALIDATION FIRST
+    if (!editForm.name.trim()) {
+      setError("Dish name is required");
+      return;
+    }
+  
+    if (!editForm.category) {
+      setError("Cuisine is required");
+      return;
+    }
+  
+    if (!editForm.itemType) {
+      setError("Item type is required");
+      return;
+    }
+  
+    if (!editForm.price || editForm.price <= 0) {
+      setError("Price must be greater than 0");
+      return;
+    }
+  
+    setSaving(true);
+  
     try {
       const res = await fetch(`http://localhost:8080/api/menu/update/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...editForm }),
       });
+  
       if (!res.ok) throw new Error("Failed to update");
-      setItems(prev => prev.map(i => i.id === id ? { id, ...editForm } : i));
+  
+      setItems(prev =>
+        prev.map(i => (i.id === id ? { id, ...editForm } : i))
+      );
+  
       setEditingId(null);
       flash("Dish updated successfully.");
     } catch (err) {
