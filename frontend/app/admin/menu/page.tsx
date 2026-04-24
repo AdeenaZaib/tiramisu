@@ -315,7 +315,7 @@ export default function AdminMenuPage() {
       `}</style>
 
       {/* ── Header ── */}
-      <header style={{
+      {/* <header style={{
         background: "rgba(253,250,245,0.96)", backdropFilter: "blur(14px)",
         borderBottom: "1px solid rgba(44,36,22,0.07)",
         position: "sticky", top: 0, zIndex: 40,
@@ -340,7 +340,7 @@ export default function AdminMenuPage() {
             >Logout</button>
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* ── Hero banner ── */}
       <section style={{ background: "#2C2416", padding: "56px 60px 52px", position: "relative", overflow: "hidden" }}>

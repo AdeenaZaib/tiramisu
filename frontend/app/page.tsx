@@ -125,7 +125,7 @@ export default function HomePage() {
           <div className="anim-4" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
             <button
               // From landing page → adds ?from=landing so header shows "← Back" + Login
-              onClick={() => router.push("/customer/menu?from=landing")}
+              onClick={() => router.push("/menu")}
               style={{
                 background: "#2C2416", color: "#FDFAF5", border: "none",
                 padding: "16px 44px", borderRadius: 100, fontSize: 12,
