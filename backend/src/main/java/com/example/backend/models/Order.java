@@ -46,6 +46,12 @@ public class Order {
     @Column(length = 500)
     private String feedback;
 
+    // Inside your Order.java Entity
+    @Column(name = "event_name")
+    private String eventName;
+
+    // stage comments
+
     // THE FIX: Initialize the list to prevent NullPointerExceptions
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> items = new ArrayList<>();
@@ -167,5 +173,13 @@ public class Order {
 
     public void setFeedback(String feedback) {
         this.feedback = feedback;
+    }
+    
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
     }
 }

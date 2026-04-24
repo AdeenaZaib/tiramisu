@@ -66,13 +66,14 @@ public class OrderController {
 
     // CMS-09 Update Order Status
     @PutMapping("/{id}/status")
-    public Order updateStatus(@PathVariable Long id, @RequestBody String status){
+    public Order updateStatus(@PathVariable Long id, @RequestBody java.util.Map<String, String> payload){
 
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Record Not Found"));
 
-        // CRITICAL FIX: Strip hidden JSON quotes from the frontend request
-        order.setStatus(status.replace("\"", ""));
+        // Safely extract just the value from the {"status": "Confirmed"} JSON
+        String newStatus = payload.get("status");
+        order.setStatus(newStatus);
 
         return orderRepository.save(order);
     }
@@ -110,11 +111,19 @@ public class OrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        // SATISFIES TC-08: Block action if the order is not Delivered
         if (!order.getStatus().equals("Delivered")) {
             throw new RuntimeException("Feedback can only be left for delivered orders.");
         }
 
-        order.setRating(feedbackData.getRating());
+        // SATISFIES TC-06 & TC-07: Enforce boundaries (1 to 5)
+        Integer rating = feedbackData.getRating();
+        if (rating == null || rating < 1 || rating > 5) {
+            throw new RuntimeException("Form validation error: Rating must be between 1 and 5 stars.");
+        }
+
+        // SATISFIES TC-04 & TC-05: Valid inputs are saved
+        order.setRating(rating);
         order.setFeedback(feedbackData.getFeedback());
         return orderRepository.save(order);
     }
