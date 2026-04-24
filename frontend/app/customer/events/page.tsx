@@ -14,8 +14,12 @@ export default function MyEvents() {
   const router = useRouter();
   const [user, setUser] = useState<{ fullName: string; email: string } | null>(null);
   const [drafts, setDrafts] = useState<DraftEvent[]>([]);
+  
+  // Modal states
   const [showModal, setShowModal] = useState(false);
   const [newEvent, setNewEvent] = useState({ name: "", date: "", address: "" });
+  const [editingEventId, setEditingEventId] = useState<string | null>(null); // NEW: Tracks which event we are editing
+  
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,20 +36,58 @@ export default function MyEvents() {
     setLoading(false);
   }, [router]);
 
-  const handleCreateEvent = (e: React.FormEvent) => {
+  // NEW: Helper to close the modal and reset states
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingEventId(null);
+    setNewEvent({ name: "", date: "", address: "" });
+  };
+
+  // NEW: Opens the modal pre-filled with the event's current details
+  const handleOpenEdit = (draft: DraftEvent) => {
+    setNewEvent({ name: draft.name, date: draft.date, address: draft.address });
+    setEditingEventId(draft.id);
+    setShowModal(true);
+  };
+
+  // UPDATED: Handles both Create AND Edit depending on the state
+  const handleSaveEvent = (e: React.FormEvent) => {
     e.preventDefault();
-    const newDraft: DraftEvent = {
-      id: Date.now().toString(),
-      name: newEvent.name,
-      date: newEvent.date,
-      address: newEvent.address,
-      items: []
-    };
-    const updatedDrafts = [...drafts, newDraft];
+    
+    // SATISFIES TC-03: Validate that the date is not in the past
+    const selectedDate = new Date(newEvent.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+
+    if (selectedDate < today) {
+      alert("Invalid Date: Event date cannot be in the past.");
+      return; // Stops the code from creating the event!
+    }
+    
+    let updatedDrafts;
+    
+    if (editingEventId) {
+      // We are editing an existing event!
+      updatedDrafts = drafts.map(draft => 
+        draft.id === editingEventId 
+          ? { ...draft, name: newEvent.name, date: newEvent.date, address: newEvent.address }
+          : draft
+      );
+    } else {
+      // We are creating a brand new event!
+      const newDraft: DraftEvent = {
+        id: Date.now().toString(),
+        name: newEvent.name,
+        date: newEvent.date,
+        address: newEvent.address,
+        items: []
+      };
+      updatedDrafts = [...drafts, newDraft];
+    }
+
     setDrafts(updatedDrafts);
     localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
-    setShowModal(false);
-    setNewEvent({ name: "", date: "", address: "" });
+    closeModal();
   };
 
   const handleDeleteDraft = (id: string) => {
@@ -55,7 +97,6 @@ export default function MyEvents() {
     localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
   };
 
-  // Adjust the number of persons for a specific dish
   const updateQuantity = (draftId: string, itemIndex: number, delta: number) => {
     const updatedDrafts = drafts.map(draft => {
       if (draft.id === draftId) {
@@ -69,7 +110,6 @@ export default function MyEvents() {
     localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
   };
 
-  // Loading state for submission
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConfirmEvent = async (draft: DraftEvent) => {
@@ -108,12 +148,10 @@ export default function MyEvents() {
         throw new Error(errorText || "Failed to place order");
       }
 
-      // THE FIX: Delete the draft silently from LocalStorage and State
       const updatedDrafts = drafts.filter(d => d.id !== draft.id);
       setDrafts(updatedDrafts);
       localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
 
-      // Now safely redirect!
       router.push("/customer/orders"); 
       
     } catch (error) {
@@ -123,7 +161,6 @@ export default function MyEvents() {
       setIsSubmitting(false); 
     }
   };
-
 
   if (loading) return <div style={{ background: "#FDFAF5", minHeight: "100vh" }} />;
 
@@ -183,11 +220,13 @@ export default function MyEvents() {
                         <h3 className="font-display" style={{ fontSize: 26, margin: "8px 0" }}>{draft.name}</h3>
                         <p style={{ fontSize: 14, color: "rgba(44,36,22,0.6)" }}>{new Date(draft.date).toLocaleDateString()} • {draft.address}</p>
                       </div>
-                      <div style={{ display: "flex", gap: 12 }}>
+                      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                         <button onClick={() => router.push(`/customer/menu?eventId=${draft.id}`)} className="btn-outline">+ Add Food</button>
                         <button disabled={isSubmitting} onClick={() => handleConfirmEvent(draft)} className="btn-primary">
                           {isSubmitting ? "Processing..." : "Confirm & Bill"}
                         </button>
+                        {/* NEW: Edit Details Button */}
+                        <button onClick={() => handleOpenEdit(draft)} style={{ background: "none", border: "none", color: "#8B6914", fontSize: 11, cursor: "pointer", textDecoration: "underline", marginLeft: 8 }}>Edit</button>
                         <button onClick={() => handleDeleteDraft(draft.id)} style={{ background: "none", border: "none", color: "#a83232", fontSize: 11, cursor: "pointer", textDecoration: "underline", marginLeft: 8 }}>Delete</button>
                       </div>
                     </div>
@@ -200,7 +239,7 @@ export default function MyEvents() {
                           <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, fontSize: 14 }}>
                             <div>
                               <span style={{ fontWeight: 500 }}>{item.menuItem.name}</span>
-                              <span style={{ color: "rgba(44,36,22,0.5)", marginLeft: 8 }}>@ ${Number(item.menuItem.price).toFixed(2)} / person</span>
+                              <span style={{ color: "rgba(44,36,22,0.5)", marginLeft: 8 }}>@ Rs {Number(item.menuItem.price).toFixed(2)} / person</span>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid rgba(44,36,22,0.15)", borderRadius: 100, padding: "4px 12px" }}>
@@ -208,13 +247,13 @@ export default function MyEvents() {
                                 <span style={{ fontSize: 13, fontWeight: 600, minWidth: 36, textAlign: "center" }}>{item.quantity} pax</span>
                                 <button onClick={() => updateQuantity(draft.id, idx, 1)} style={{ background: "none", border: "none", cursor: "pointer", color: "#2C2416" }}>+</button>
                               </div>
-                              <span style={{ fontWeight: 600, width: 80, textAlign: "right" }}>${(Number(item.menuItem.price) * item.quantity).toFixed(2)}</span>
+                              <span style={{ fontWeight: 600, width: 80, textAlign: "right", fontFamily: "'Jost', sans-serif" }}>Rs {(Number(item.menuItem.price) * item.quantity).toFixed(2)}</span>
                             </div>
                           </div>
                         ))}
                         <div style={{ borderTop: "1px solid rgba(44,36,22,0.1)", marginTop: 16, paddingTop: 16, display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: 18 }}>
                           <span>Estimated Total</span>
-                          <span style={{ color: "#8B6914" }}>${total.toFixed(2)}</span>
+                          <span style={{ color: "#8B6914", fontFamily: "'Jost', sans-serif" }}>Rs {total.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
@@ -234,18 +273,37 @@ export default function MyEvents() {
         </div>
       </footer>
 
-      {/* Modal */}
+      {/* Modal (Used for both Create & Edit) */}
       {showModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(44,36,22,0.4)", backdropFilter: "blur(4px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#FDFAF5", padding: 40, borderRadius: 8, width: "100%", maxWidth: 450 }}>
-            <h2 className="font-display" style={{ fontSize: 32, marginBottom: 24 }}>New Event</h2>
-            <form onSubmit={handleCreateEvent} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Title changes dynamically */}
+            <h2 className="font-display" style={{ fontSize: 32, marginBottom: 24 }}>
+              {editingEventId ? "Edit Event" : "New Event"}
+            </h2>
+            <form onSubmit={handleSaveEvent} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div><label style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Event Name</label><input required type="text" placeholder="e.g., Sarah's Wedding" value={newEvent.name} onChange={e => setNewEvent({...newEvent, name: e.target.value})} className="modern-input" /></div>
-              <div><label style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Event Date</label><input required type="date" value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} className="modern-input" /></div>
+              <div>
+                <label style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>
+                  Event Date
+                </label>
+                <input 
+                  required 
+                  type="date" 
+                  value={newEvent.date} 
+                  // NEW: Greys out past dates in the calendar picker!
+                  min={new Date().toISOString().split("T")[0]} 
+                  onChange={e => setNewEvent({...newEvent, date: e.target.value})} 
+                  className="modern-input" 
+                />
+              </div>
               <div><label style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Venue Address</label><input required type="text" placeholder="123 Main St." value={newEvent.address} onChange={e => setNewEvent({...newEvent, address: e.target.value})} className="modern-input" /></div>
               <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-                <button type="submit" className="btn-primary" style={{ flex: 1 }}>Create</button>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-outline" style={{ flex: 1 }}>Cancel</button>
+                {/* Button text changes dynamically */}
+                <button type="submit" className="btn-primary" style={{ flex: 1 }}>
+                  {editingEventId ? "Save Changes" : "Create"}
+                </button>
+                <button type="button" onClick={closeModal} className="btn-outline" style={{ flex: 1 }}>Cancel</button>
               </div>
             </form>
           </div>

@@ -2,7 +2,19 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type Order = { id: number; customerName: string; eventDate: string; deliveryAddress: string; status: string; totalCost: number; createdAt: string; rating?: number; feedback?: string; };
+// THE FIX: Added eventName to the type definition so it correctly pulls from the database
+type Order = { 
+  id: number; 
+  customerName: string; 
+  eventName?: string; 
+  eventDate: string; 
+  deliveryAddress: string; 
+  status: string; 
+  totalCost: number; 
+  createdAt: string; 
+  rating?: number; 
+  feedback?: string; 
+};
 
 export default function MyOrders() {
   const router = useRouter();
@@ -17,7 +29,14 @@ export default function MyOrders() {
     try {
       const res = await fetch(`http://localhost:8080/api/orders/customer/${encodeURIComponent(name)}`);
       const data = await res.json();
-      data.sort((a: Order, b: Order) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+      
+      // SATISFIES TC-04: Sorts by the date the order was PLACED (createdAt) newest first
+      data.sort((a: Order, b: Order) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(a.eventDate).getTime();
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(b.eventDate).getTime();
+        return dateB - dateA; 
+      });
+      
       setOrders(data);
     } catch (err) { console.error(err); }
   };
@@ -39,26 +58,22 @@ export default function MyOrders() {
       });
       
       if (!res.ok) {
-        // SATISFIES TC-02: Grabs the exact error message from Spring Boot
         const errorText = await res.text();
         throw new Error(errorText || "Failed to cancel order");
       }
       
-      // SATISFIES TC-01: Successfully re-fetches the list to show "Cancelled"
       fetchMyOrders(user!.fullName); 
       
     } catch (error) { 
-      // Safely displays the backend's rejection message in an alert
       const errorMessage = error instanceof Error ? error.message : "Error cancelling order";
       alert(errorMessage); 
     }
   };
 
   const submitFeedback = async (id: number) => {
-    // SATISFIES TC-06 & TC-07: Frontend Boundary Validation
     if (rating < 1 || rating > 5) {
       alert("Form validation error; submission blocked. Rating must be between 1 and 5.");
-      return; // Stops the code from running further
+      return; 
     }
 
     try {
@@ -76,7 +91,6 @@ export default function MyOrders() {
       setReviewingId(null);
       fetchMyOrders(user!.fullName); 
     } catch (error) { 
-      // This catches the TC-08 backend error message and displays it
       const errorMessage = error instanceof Error ? error.message : "Error submitting review";
       alert(errorMessage); 
     }
@@ -135,14 +149,20 @@ export default function MyOrders() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, borderBottom: "1px solid rgba(44,36,22,0.05)", paddingBottom: 24 }}>
                     <div>
                       <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(44,36,22,0.4)", fontWeight: 600 }}>Order #{order.id}</span>
+                      {/* SATISFIES TC-04: Displays Event Name */}
                       <h3 className="font-display" style={{ fontSize: 26, margin: "8px 0" }}>{order.eventName || "Catering Event"}</h3>
+                      {/* SATISFIES TC-04: Displays Date */}
                       <p style={{ fontSize: 14, color: "rgba(44,36,22,0.6)" }}>Event Date: {new Date(order.eventDate).toLocaleDateString()}</p>
                     </div>
                     <div style={{ textAlign: "right" }}>
+                      {/* SATISFIES TC-04: Displays Status Pill */}
                       <span style={{ background: statusStyle.bg, color: statusStyle.color, padding: "6px 16px", borderRadius: 100, fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600, display: "inline-block", marginBottom: 12 }}>
                         {order.status}
                       </span>
-                      <p style={{ fontSize: 24, fontWeight: 500 }}>${order.totalCost?.toFixed(2)}</p>
+                      {/* SATISFIES TC-04: Displays Total (Updated to Rs and Jost font) */}
+                      <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 24, fontWeight: 500, color: "#2C2416" }}>
+                        Rs {order.totalCost?.toFixed(2)}
+                      </p>
                     </div>
                   </div>
 

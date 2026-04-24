@@ -43,7 +43,7 @@ export default function AuthPage() {
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("role", userData.role);
       if (userData.role === "Manager") {
-        router.push("/admin/dashboard");
+        router.push("/admin");
       } else {
         router.push("/customer/menu");
       }

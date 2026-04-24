@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       const res = await fetch("http://localhost:8080/api/orders/all");
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
-      data.sort((a: Order, b: Order) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
+      data.sort((a: Order, b: Order) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
       setOrders(data);
     } catch (err: any) {
       alert("Error: " + err.message);
