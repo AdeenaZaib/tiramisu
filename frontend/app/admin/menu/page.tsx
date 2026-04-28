@@ -344,9 +344,35 @@ export default function AdminMenuPage() {
       </header> */}
 
       {/* ── Hero banner ── */}
-      <section style={{ background: "#2C2416", padding: "56px 60px 52px", position: "relative", overflow: "hidden" }}>
+      {/*<section style={{ background: "#2C2416", padding: "56px 60px 52px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: -40, right: 80, width: 220, height: 220, border: "1px solid rgba(253,250,245,0.05)", borderRadius: "50%" }} />
-        <div style={{ position: "absolute", top: -20, right: 40, width: 300, height: 300, border: "1px solid rgba(253,250,245,0.03)", borderRadius: "50%" }} />
+        <div style={{ position: "absolute", top: -20, right: 40, width: 300, height: 300, border: "1px solid rgba(253,250,245,0.03)", borderRadius: "50%" }} />*/}
+      <section style={{ background: "#2C2416", padding: "56px 60px 52px", position: "relative", overflow: "hidden" }}>
+  
+        {/*decorative circles should NOT block clicks */}
+        <div style={{
+          position: "absolute",
+          top: -40,
+          right: 80,
+          width: 220,
+          height: 220,
+          border: "1px solid rgba(253,250,245,0.05)",
+          borderRadius: "50%",
+          pointerEvents: "none",  
+          zIndex: 0
+        }} />
+
+        <div style={{
+          position: "absolute",
+          top: -20,
+          right: 40,
+          width: 300,
+          height: 300,
+          border: "1px solid rgba(253,250,245,0.03)",
+          borderRadius: "50%",
+          pointerEvents: "none",   
+          zIndex: 0
+        }} />
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
             <div style={{ height: 1, width: 36, background: "rgba(253,250,245,0.2)" }} />
