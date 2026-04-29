@@ -108,7 +108,7 @@ export default function AnalyticsDashboard() {
                 </span>
                 {/* THE FIX: Removed .font-display so it uses the clean Jost sans-serif font */}
                 <h2 style={{ fontFamily: "'Jost', sans-serif", fontSize: 56, fontWeight: 500, color: "#8B6914", margin: 0, lineHeight: 1.1 }}>
-                  ${stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  Rs. {stats.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </h2>
                 <p style={{ fontSize: 13, color: "rgba(44,36,22,0.5)", marginTop: 16 }}>
                   Aggregated from all active orders

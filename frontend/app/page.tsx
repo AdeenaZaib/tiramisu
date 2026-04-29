@@ -3,15 +3,44 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+// Match the type from your backend
+type MenuItem = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  itemType?: string;
+};
+
 export default function HomePage() {
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [featuredMenu, setFeaturedMenu] = useState<MenuItem[]>([]);
+  const [loadingMenu, setLoadingMenu] = useState(true);
 
   useEffect(() => {
     setVisible(true);
     const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
+
+    // Fetch the real menu from the database
+    fetch("http://localhost:8080/api/menu/all")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
+      .then((data: MenuItem[]) => {
+        // Grab the first 4 items to feature on the landing page
+        setFeaturedMenu(data.slice(0, 4));
+        setLoadingMenu(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching menu:", err);
+        setLoadingMenu(false);
+      });
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -20,7 +49,7 @@ export default function HomePage() {
       className="min-h-screen overflow-x-hidden"
       style={{ background: "#FDFAF5", color: "#2C2416", fontFamily: "'Jost', sans-serif" }}
     >
-      {/* ── Google Fonts ── */}
+      {/* ── Google Fonts & Styles ── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap');
 
@@ -40,49 +69,58 @@ export default function HomePage() {
 
         .card-lift { transition: box-shadow 0.4s ease, transform 0.4s ease; }
         .card-lift:hover { box-shadow: 0 20px 60px rgba(44,36,22,0.10); transform: translateY(-4px); }
-
-        .nav-link:hover { color: rgba(44,36,22,0.9) !important; }
       `}</style>
 
-      {/* ── Sticky Nav ── */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        transition: "all 0.5s ease",
-        background: scrolled ? "rgba(253,250,245,0.96)" : "transparent",
+      {/* ── Consistent System Header ── */}
+      <header style={{
+        background: scrolled ? "rgba(253,250,245,0.96)" : "transparent", 
         backdropFilter: scrolled ? "blur(14px)" : "none",
-        borderBottom: scrolled ? "1px solid rgba(44,36,22,0.07)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(44,36,22,0.07)" : "1px solid transparent",
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+        transition: "all 0.5s ease"
       }}>
-        <div style={{
-          maxWidth: 1280, margin: "0 auto", padding: "0 48px",
-          height: 76, display: "flex", alignItems: "center", justifyContent: "space-between"
-        }}>
-          <span className="font-display" style={{ fontSize: 26, letterSpacing: 2, color: "#2C2416", fontWeight: 400 }}>
-            tiramisu.
-          </span>
-          <div style={{ display: "flex", gap: 36, fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(44,36,22,0.5)", fontWeight: 500 }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 48px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center" }}>
+             <span className="font-display" style={{ fontSize: 24, letterSpacing: 2, color: "#2C2416", fontWeight: 600 }}>
+               tiramisu.
+             </span>
+          </div>
+
+          {/* Navigation Links (Centered styling) */}
+          <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
             {["about", "services", "gallery", "menu"].map(l => (
-              <a key={l} href={`#${l}`} className="nav-link"
-                style={{ textDecoration: "none", color: "inherit", transition: "color 0.2s" }}>
+              <a key={l} href={`#${l}`}
+                style={{ 
+                  textDecoration: "none", color: "rgba(44,36,22,0.6)", 
+                  fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", 
+                  fontWeight: 600, transition: "color 0.2s ease" 
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = "#2C2416"}
+                onMouseLeave={e => e.currentTarget.style.color = "rgba(44,36,22,0.6)"}
+              >
                 {l}
               </a>
             ))}
           </div>
-          <button
-            onClick={() => router.push("/auth")}
-            style={{
-              background: "transparent", border: "1.5px solid rgba(44,36,22,0.35)",
-              color: "#2C2416", padding: "10px 28px", borderRadius: 100,
-              fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase",
-              fontWeight: 600, cursor: "pointer", fontFamily: "'Jost', sans-serif",
-              transition: "all 0.3s ease",
+
+          {/* Login Button */}
+          <button onClick={() => router.push("/auth")}
+            style={{ 
+              background: "transparent", border: "1.5px solid rgba(44,36,22,0.25)", 
+              color: "#2C2416", padding: "9px 24px", borderRadius: 100, 
+              fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase", 
+              fontWeight: 600, cursor: "pointer", fontFamily: "'Jost', sans-serif", 
+              transition: "all 0.3s ease" 
             }}
-            onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "#2C2416"; b.style.color = "#FDFAF5"; }}
-            onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "transparent"; b.style.color = "#2C2416"; }}
+            onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "#2C2416"; b.style.color = "#FDFAF5"; b.style.borderColor = "#2C2416"; }}
+            onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = "transparent"; b.style.color = "#2C2416"; b.style.borderColor = "rgba(44,36,22,0.25)"; }}
           >
             Login
           </button>
         </div>
-      </nav>
+      </header>
 
       {/* ── Hero ── */}
       <section style={{ position: "relative", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -124,8 +162,7 @@ export default function HomePage() {
           </p>
           <div className="anim-4" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
             <button
-              // From landing page → adds ?from=landing so header shows "← Back" + Login
-              onClick={() => router.push("/menu")}
+              onClick={() => document.getElementById("menu")?.scrollIntoView({ behavior: "smooth" })}
               style={{
                 background: "#2C2416", color: "#FDFAF5", border: "none",
                 padding: "16px 44px", borderRadius: 100, fontSize: 12,
@@ -277,7 +314,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Menu ── */}
+      {/* ── Featured Menu (Real DB Data) ── */}
       <section id="menu" style={{ background: "#2C2416", padding: "100px 60px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 60, flexWrap: "wrap", gap: 24 }}>
@@ -302,42 +339,47 @@ export default function HomePage() {
               View Full Menu
             </button>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 18 }}>
-            {[
-              { img: "/images/menu-salad.jpg", icon: "🥗", name: "Garden Salad", cat: "Starter", price: "Rs 850" },
-              { img: "/images/menu-chicken.jpg", icon: "🍗", name: "Herb Chicken", cat: "Main", price: "Rs 2,400" },
-              { img: "/images/menu-pasta.jpg", icon: "🍝", name: "Truffle Pasta", cat: "Main", price: "Rs 1,900" },
-              { img: "/images/menu-dessert.jpg", icon: "🍮", name: "Crème Brûlée", cat: "Dessert", price: "Rs 750" },
-            ].map(({ img, icon, name, cat, price }) => (
-              <div key={name} className="card-lift" style={{ background: "rgba(253,250,245,0.04)", borderRadius: 4, overflow: "hidden", border: "1px solid rgba(253,250,245,0.07)" }}>
-                <div style={{ position: "relative", height: 190, background: "rgba(139,105,20,0.15)", overflow: "hidden" }}>
-                  <Image src={img} alt={name} fill style={{ objectFit: "cover" }} className="img-zoom"
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                  <div style={{ position: "absolute", inset: 0, zIndex: -1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 56, opacity: 0.4 }}>{icon}</span>
+          
+          {loadingMenu ? (
+            <div style={{ color: "rgba(253,250,245,0.5)", textAlign: "center", padding: "40px" }}>Loading featured dishes...</div>
+          ) : featuredMenu.length === 0 ? (
+            <div style={{ color: "rgba(253,250,245,0.5)", textAlign: "center", padding: "40px" }}>No menu items available at the moment.</div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 18 }}>
+              {featuredMenu.map((item) => (
+                <div key={item.id} className="card-lift" style={{ background: "rgba(253,250,245,0.04)", borderRadius: 4, overflow: "hidden", border: "1px solid rgba(253,250,245,0.07)" }}>
+                  <div style={{ position: "relative", height: 190, background: "rgba(139,105,20,0.15)", overflow: "hidden" }}>
+                    <Image 
+                      src={`/images/menu/${item.name.toLowerCase().replace(/\s+/g, '-')}.jpg`} 
+                      alt={item.name} fill style={{ objectFit: "cover" }} className="img-zoom"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} 
+                    />
+                    <div style={{ position: "absolute", inset: 0, zIndex: -1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 56, opacity: 0.4 }}>🍽️</span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "22px 22px 26px" }}>
+                    <span style={{ fontSize: 10, letterSpacing: "0.25em", textTransform: "uppercase", color: "#8B6914", fontWeight: 600 }}>{item.category}</span>
+                    <h4 className="font-display" style={{ fontSize: 21, fontWeight: 400, color: "#FDFAF5", margin: "8px 0 16px" }}>{item.name}</h4>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ color: "rgba(253,250,245,0.45)", fontSize: 13, fontWeight: 300 }}>Rs {Number(item.price).toLocaleString()}</span>
+                      <button
+                        onClick={() => router.push("/auth")}
+                        style={{
+                          background: "#8B6914", color: "#FDFAF5", border: "none",
+                          padding: "7px 18px", borderRadius: 100, fontSize: 10,
+                          letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600,
+                          cursor: "pointer", fontFamily: "'Jost', sans-serif", transition: "background 0.3s",
+                        }}
+                        onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "#A07820"}
+                        onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "#8B6914"}
+                      >Order</button>
+                    </div>
                   </div>
                 </div>
-                <div style={{ padding: "22px 22px 26px" }}>
-                  <span style={{ fontSize: 10, letterSpacing: "0.25em", textTransform: "uppercase", color: "#8B6914", fontWeight: 600 }}>{cat}</span>
-                  <h4 className="font-display" style={{ fontSize: 21, fontWeight: 400, color: "#FDFAF5", margin: "8px 0 16px" }}>{name}</h4>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: "rgba(253,250,245,0.45)", fontSize: 13, fontWeight: 300 }}>{price}</span>
-                    <button
-                      onClick={() => router.push("/auth")}
-                      style={{
-                        background: "#8B6914", color: "#FDFAF5", border: "none",
-                        padding: "7px 18px", borderRadius: 100, fontSize: 10,
-                        letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 600,
-                        cursor: "pointer", fontFamily: "'Jost', sans-serif", transition: "background 0.3s",
-                      }}
-                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = "#A07820"}
-                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = "#8B6914"}
-                    >Order</button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
