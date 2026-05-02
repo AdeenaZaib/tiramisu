@@ -226,7 +226,7 @@ export default function HomePage() {
         </div>
         <div style={{ position: "relative", height: 560 }}>
           <div style={{ borderRadius: 4, overflow: "hidden", height: "100%", position: "relative", background: "#EDE0C8" }}>
-            <Image src="/images/about.jpg" alt="Our catering team" fill
+            <Image src="/images/lp1.jpg" alt="Our catering team" fill
               style={{ objectFit: "cover" }} className="img-zoom"
               onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
@@ -254,9 +254,9 @@ export default function HomePage() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
             {[
-              { img: "/images/service-wedding.jpg", icon: "💍", title: "Weddings", desc: "Bespoke menus for your most treasured day. From canapés to multi-course feasts, crafted with love." },
-              { img: "/images/service-corporate.jpg", icon: "🥂", title: "Corporate", desc: "Professional catering for conferences, team lunches, and business dinners that leave an impression." },
-              { img: "/images/service-private.jpg", icon: "🍽️", title: "Private Dining", desc: "An intimate restaurant experience in the comfort of your home. Our chefs come to you." },
+              { img: "/images/service-wedding.jpg", icon: "", title: "Weddings", desc: "Bespoke menus for your most treasured day. From canapés to multi-course feasts, crafted with love." },
+              { img: "/images/service-corporate.jpg", icon: "", title: "Corporate", desc: "Professional catering for conferences, team lunches, and business dinners that leave an impression." },
+              { img: "/images/service-private.jpg", icon: "", title: "Private Dining", desc: "An intimate restaurant experience in the comfort of your home. Our chefs come to you." },
             ].map(({ img, icon, title, desc }) => (
               <div key={title} className="card-lift" style={{ background: "#FDFAF5", borderRadius: 4, overflow: "hidden", cursor: "default" }}>
                 <div style={{ position: "relative", height: 260, overflow: "hidden", background: "#EDE0C8" }}>
