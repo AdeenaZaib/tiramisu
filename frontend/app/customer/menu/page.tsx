@@ -2,6 +2,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
+import Toast from "@/components/Toast"; // <-- Import the Toast component
 
 // ─── Data Types ─────────────────────────────────────────────────────────────
 type FrontendMenuItem = {
@@ -29,7 +30,7 @@ function MenuCatalogInner() {
   const searchParams = useSearchParams();
   const fromLanding = searchParams.get("from") === "landing";
 
-  // NEW: Grab the Event ID from the URL
+  // Grab the Event ID from the URL
   const targetEventId = searchParams.get("eventId");
   const [eventName, setEventName] = useState<string | null>(null);
 
@@ -38,7 +39,17 @@ function MenuCatalogInner() {
   const [activeCuisine, setActiveCuisine] = useState("All");
   const [loading, setLoading] = useState(true);
 
-  // NEW: Find the event name to show in the UI
+  // Toast States
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  // Helper to show toasts
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
+
+  // Find the event name to show in the UI
   useEffect(() => {
     if (targetEventId) {
       const storedUser = localStorage.getItem("user");
@@ -51,7 +62,7 @@ function MenuCatalogInner() {
     }
   }, [targetEventId]);
 
-  // NEW: Add Item to Specific Event
+  // Add Item to Specific Event
   const handleAddToEvent = (item: FrontendMenuItem) => {
     if (!targetEventId) {
       router.push("/customer/events"); // Force them to pick an event first
@@ -63,15 +74,17 @@ function MenuCatalogInner() {
     const draftIndex = drafts.findIndex((d: any) => d.id === targetEventId);
     
     if (draftIndex !== -1) {
-      // Clean up the price string (remove '$') for math calculation
-      const numericPrice = parseFloat(item.price.replace('$', ''));
+      // Clean up the price string (remove 'Rs ') for math calculation
+      const numericPrice = parseFloat(item.price.replace('Rs ', '').replace(/,/g, ''));
       
       drafts[draftIndex].items.push({
         menuItem: { id: item.id, name: item.name, price: numericPrice },
         quantity: 1 // Default to 1 quantity
       });
       localStorage.setItem(`drafts_${storedUser.email}`, JSON.stringify(drafts));
-      alert(`${item.name} added to ${drafts[draftIndex].name}!`);
+      
+      // THE FIX: Trigger Success Toast instead of alert()
+      showToast(`${item.name} added to ${drafts[draftIndex].name}!`, "success");
     }
   };
 
@@ -88,11 +101,11 @@ function MenuCatalogInner() {
           id: item.id,
           name: item.name,
           desc: item.description || "A delicious catering option crafted with care.",
-          price: `$${Number(item.price).toFixed(2)}`, // Format to currency
+          price: `Rs ${Number(item.price).toLocaleString()}`, // Format to Rupee currency
           cuisine: item.category || "General",
           category: "Dish", 
-          img: `/images/menu/${item.name.toLowerCase().replace(/\s+/g, '-')}.jpg`, // Tries to find matching image
-          icon: "🍽️", // Fallback icon if image fails to load
+          img: `/images/menu/${item.name.toLowerCase().replace(/\s+/g, '-')}.jpg`, 
+          icon: "🍽️", 
         }));
 
         setMenuItems(formattedData);
@@ -113,7 +126,7 @@ function MenuCatalogInner() {
     : menuItems.filter(i => i.cuisine === activeCuisine);
 
   return (
-    <div style={{ background: "#FDFAF5", minHeight: "100vh", fontFamily: "'Jost', sans-serif", color: "#2C2416" }}>
+    <div style={{ background: "#FDFAF5", minHeight: "100vh", fontFamily: "'Jost', sans-serif", color: "#2C2416", position: "relative" }}>
 
       {/* ── Fonts & Animations ── */}
       <style>{`
@@ -300,6 +313,9 @@ function MenuCatalogInner() {
           <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase" }}>© {new Date().getFullYear()} tiramisu.</span>
         </div>
       </footer>
+
+      {/* Render the Toast Component */}
+      <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg("")} />
     </div>
   );
 }

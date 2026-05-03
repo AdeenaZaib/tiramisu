@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/Toast"; // <-- Import the Toast component
 
 type DraftEvent = {
   id: string;
@@ -18,9 +19,20 @@ export default function MyEvents() {
   // Modal states
   const [showModal, setShowModal] = useState(false);
   const [newEvent, setNewEvent] = useState({ name: "", date: "", address: "" });
-  const [editingEventId, setEditingEventId] = useState<string | null>(null); // NEW: Tracks which event we are editing
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Toast States
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  // Helper to show toasts
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   useEffect(() => {
     const storedUser = typeof window !== "undefined" ? window.localStorage.getItem("user") : null;
@@ -36,45 +48,41 @@ export default function MyEvents() {
     setLoading(false);
   }, [router]);
 
-  // NEW: Helper to close the modal and reset states
   const closeModal = () => {
     setShowModal(false);
     setEditingEventId(null);
     setNewEvent({ name: "", date: "", address: "" });
   };
 
-  // NEW: Opens the modal pre-filled with the event's current details
   const handleOpenEdit = (draft: DraftEvent) => {
     setNewEvent({ name: draft.name, date: draft.date, address: draft.address });
     setEditingEventId(draft.id);
     setShowModal(true);
   };
 
-  // UPDATED: Handles both Create AND Edit depending on the state
   const handleSaveEvent = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // SATISFIES TC-03: Validate that the date is not in the past
     const selectedDate = new Date(newEvent.date);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+    today.setHours(0, 0, 0, 0);
 
     if (selectedDate < today) {
-      alert("Invalid Date: Event date cannot be in the past.");
-      return; // Stops the code from creating the event!
+      // Replaced alert with Error Toast
+      showToast("Invalid Date: Event date cannot be in the past.", "error");
+      return; 
     }
     
     let updatedDrafts;
     
     if (editingEventId) {
-      // We are editing an existing event!
       updatedDrafts = drafts.map(draft => 
         draft.id === editingEventId 
           ? { ...draft, name: newEvent.name, date: newEvent.date, address: newEvent.address }
           : draft
       );
+      showToast("Event updated successfully.", "success"); // Success Toast
     } else {
-      // We are creating a brand new event!
       const newDraft: DraftEvent = {
         id: Date.now().toString(),
         name: newEvent.name,
@@ -83,6 +91,7 @@ export default function MyEvents() {
         items: []
       };
       updatedDrafts = [...drafts, newDraft];
+      showToast("New event created successfully.", "success"); // Success Toast
     }
 
     setDrafts(updatedDrafts);
@@ -95,6 +104,7 @@ export default function MyEvents() {
     const updatedDrafts = drafts.filter(d => d.id !== id);
     setDrafts(updatedDrafts);
     localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
+    showToast("Event deleted.", "success"); // Success Toast
   };
 
   const updateQuantity = (draftId: string, itemIndex: number, delta: number) => {
@@ -110,11 +120,10 @@ export default function MyEvents() {
     localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleConfirmEvent = async (draft: DraftEvent) => {
     if (draft.items.length === 0) {
-      alert("Please add menu items to this event before confirming.");
+      // Replaced alert with Error Toast
+      showToast("Please add menu items to this event before confirming.", "error");
       return;
     }
     if (!confirm(`Are you ready to finalize billing for ${draft.name}?`)) return;
@@ -152,12 +161,19 @@ export default function MyEvents() {
       setDrafts(updatedDrafts);
       localStorage.setItem(`drafts_${user?.email}`, JSON.stringify(updatedDrafts));
 
-      router.push("/customer/orders"); 
+      // Success Toast before routing
+      showToast("Order confirmed successfully!", "success");
+      
+      setTimeout(() => {
+        router.push("/customer/orders"); 
+      }, 1000);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       console.error("Backend Error:", errorMessage);
-      alert("Error confirming event: " + errorMessage);
+      
+      // Replaced alert with Error Toast
+      showToast(errorMessage, "error");
       setIsSubmitting(false); 
     }
   };
@@ -225,7 +241,6 @@ export default function MyEvents() {
                         <button disabled={isSubmitting} onClick={() => handleConfirmEvent(draft)} className="btn-primary">
                           {isSubmitting ? "Processing..." : "Confirm & Bill"}
                         </button>
-                        {/* NEW: Edit Details Button */}
                         <button onClick={() => handleOpenEdit(draft)} style={{ background: "none", border: "none", color: "#8B6914", fontSize: 11, cursor: "pointer", textDecoration: "underline", marginLeft: 8 }}>Edit</button>
                         <button onClick={() => handleDeleteDraft(draft.id)} style={{ background: "none", border: "none", color: "#a83232", fontSize: 11, cursor: "pointer", textDecoration: "underline", marginLeft: 8 }}>Delete</button>
                       </div>
@@ -277,7 +292,6 @@ export default function MyEvents() {
       {showModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(44,36,22,0.4)", backdropFilter: "blur(4px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#FDFAF5", padding: 40, borderRadius: 8, width: "100%", maxWidth: 450 }}>
-            {/* Title changes dynamically */}
             <h2 className="font-display" style={{ fontSize: 32, marginBottom: 24 }}>
               {editingEventId ? "Edit Event" : "New Event"}
             </h2>
@@ -291,7 +305,6 @@ export default function MyEvents() {
                   required 
                   type="date" 
                   value={newEvent.date} 
-                  // NEW: Greys out past dates in the calendar picker!
                   min={new Date().toISOString().split("T")[0]} 
                   onChange={e => setNewEvent({...newEvent, date: e.target.value})} 
                   className="modern-input" 
@@ -299,7 +312,6 @@ export default function MyEvents() {
               </div>
               <div><label style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600 }}>Venue Address</label><input required type="text" placeholder="123 Main St." value={newEvent.address} onChange={e => setNewEvent({...newEvent, address: e.target.value})} className="modern-input" /></div>
               <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-                {/* Button text changes dynamically */}
                 <button type="submit" className="btn-primary" style={{ flex: 1 }}>
                   {editingEventId ? "Save Changes" : "Create"}
                 </button>
@@ -309,6 +321,9 @@ export default function MyEvents() {
           </div>
         </div>
       )}
+
+      {/* Render the Toast Component at the bottom */}
+      <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg("")} />
     </div>
   );
 }

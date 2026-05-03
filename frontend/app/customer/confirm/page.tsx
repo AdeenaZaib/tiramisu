@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/Toast"; // <-- Now this import will work perfectly!
 
 type CartItem = {
   item: { id: number; name: string; price: number };
@@ -13,6 +14,16 @@ export default function ConfirmOrder() {
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [orderId, setOrderId] = useState<number | null>(null);
+
+  // Toast States
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  // Helper to show toasts
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
@@ -35,19 +46,20 @@ export default function ConfirmOrder() {
       const storedUser = typeof window !== "undefined" ? window.localStorage.getItem("user") : null;
       const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
 
-      // 2. THE FIX: The Bouncer Check
+      // 2. The Bouncer Check
       if (!loggedInUser || !loggedInUser.fullName) {
         throw new Error("You must be logged in to place an order.");
       }
+      
       // Create the payload to perfectly match the Java models
       const payload = {
-        customerName: loggedInUser.fullName, // Ensure this matches Order.java
+        customerName: loggedInUser.fullName, 
         contact: form.contactNumber,
         eventDate: form.eventDate,
         deliveryAddress: form.deliveryAddress,
-        items: cart.map((c) => ({          // Changed from 'orderItems' to 'items'
+        items: cart.map((c) => ({          
           quantity: c.quantity,
-          menuItem: {                      // Nested object to match Java's @ManyToOne
+          menuItem: {                      
             id: c.item.id
           }
         })),
@@ -70,7 +82,8 @@ export default function ConfirmOrder() {
       localStorage.removeItem("cart");
       localStorage.removeItem("checkoutForm");
     } catch (err: any) {
-      alert("Error: " + err.message);
+      // THE FIX: Trigger the custom error Toast instead of alert()
+      showToast(err.message, "error");
     } finally {
       setLoading(false);
     }
@@ -80,7 +93,6 @@ export default function ConfirmOrder() {
   if (orderId) {
     return (
       <div className="max-w-lg mx-auto text-center py-20">
-       
         <h1 className="text-3xl font-bold text-green-700 mb-2">Order Placed!</h1>
         <p className="text-gray-500 mb-1">Your Order ID is</p>
         <p className="text-5xl font-bold text-amber-900 mb-8">#{orderId}</p>
@@ -93,7 +105,7 @@ export default function ConfirmOrder() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto relative">
       <h1 className="text-4xl font-bold text-red-800 text-center mb-8">Confirm Order</h1>
 
       {/* Step Indicator */}
@@ -151,6 +163,9 @@ export default function ConfirmOrder() {
           </button>
         </div>
       </div>
+
+      {/* Render the Toast Component */}
+      <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg("")} />
     </div>
   );
 }

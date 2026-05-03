@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/Toast"; // <-- Import the Toast component
 
 // THE FIX: Added eventName to the type definition so it correctly pulls from the database
 type Order = { 
@@ -24,6 +25,16 @@ export default function MyOrders() {
   const [reviewingId, setReviewingId] = useState<number | null>(null);
   const [rating, setRating] = useState(5);
   const [feedback, setFeedback] = useState("");
+
+  // Toast States
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  // Helper to show toasts
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   const fetchMyOrders = async (name: string) => {
     try {
@@ -62,17 +73,18 @@ export default function MyOrders() {
         throw new Error(errorText || "Failed to cancel order");
       }
       
+      showToast("Order cancelled successfully.", "success"); // Success Toast
       fetchMyOrders(user!.fullName); 
       
     } catch (error) { 
       const errorMessage = error instanceof Error ? error.message : "Error cancelling order";
-      alert(errorMessage); 
+      showToast(errorMessage, "error"); // Error Toast
     }
   };
 
   const submitFeedback = async (id: number) => {
     if (rating < 1 || rating > 5) {
-      alert("Form validation error; submission blocked. Rating must be between 1 and 5.");
+      showToast("Rating must be between 1 and 5.", "error"); // Error Toast
       return; 
     }
 
@@ -88,11 +100,12 @@ export default function MyOrders() {
         throw new Error(errorText || "Failed to submit feedback");
       }
       
+      showToast("Thank you for your feedback!", "success"); // Success Toast
       setReviewingId(null);
       fetchMyOrders(user!.fullName); 
     } catch (error) { 
       const errorMessage = error instanceof Error ? error.message : "Error submitting review";
-      alert(errorMessage); 
+      showToast(errorMessage, "error"); // Error Toast
     }
   };
 
@@ -107,7 +120,7 @@ export default function MyOrders() {
   };
 
   return (
-    <div style={{ background: "#FDFAF5", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Jost', sans-serif", color: "#2C2416" }}>
+    <div style={{ background: "#FDFAF5", minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: "'Jost', sans-serif", color: "#2C2416", position: "relative" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap');
         .font-display { font-family: 'Cormorant Garamond', serif; }
@@ -161,7 +174,7 @@ export default function MyOrders() {
                       </span>
                       {/* SATISFIES TC-04: Displays Total (Updated to Rs and Jost font) */}
                       <p style={{ fontFamily: "'Jost', sans-serif", fontSize: 24, fontWeight: 500, color: "#2C2416" }}>
-                        Rs {order.totalCost?.toFixed(2)}
+                        Rs {order.totalCost?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>
@@ -215,6 +228,9 @@ export default function MyOrders() {
           <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase" }}>© {new Date().getFullYear()} tiramisu.</span>
         </div>
       </footer>
+
+      {/* Render the Toast Component */}
+      <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg("")} />
     </div>
   );
 }

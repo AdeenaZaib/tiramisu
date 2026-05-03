@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/Toast"; // <-- Import the Toast component
 
 type CartItem = {
   item: { id: number; name: string; price: number };
@@ -16,6 +17,16 @@ export default function CheckoutDetails() {
     eventDate: "",
     deliveryAddress: "",
   });
+
+  // Toast States
+  const [toastMsg, setToastMsg] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
+
+  // Helper to show toasts
+  const showToast = (msg: string, type: "success" | "error" = "success") => {
+    setToastMsg(msg);
+    setToastType(type);
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem("cart");
@@ -36,16 +47,26 @@ export default function CheckoutDetails() {
     e.preventDefault();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    
     if (new Date(form.eventDate) <= today) {
-      alert("Invalid Date: Event date must be in the future.");
+      // Show Error Toast instead of default browser alert
+      showToast("Invalid Date: Event date must be in the future.", "error");
       return;
     }
+    
     localStorage.setItem("checkoutForm", JSON.stringify(form));
-    router.push("/customer/confirm");
+    
+    // Show Success Toast
+    showToast("Details saved! Proceeding to review...", "success");
+
+    // Add a short delay so the user can see the success message before routing
+    setTimeout(() => {
+      router.push("/customer/confirm");
+    }, 1000); 
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto relative">
       <h1 className="text-4xl font-bold text-red-800 text-center mb-8">Event Details</h1>
 
       {/* Step Indicator */}
@@ -114,6 +135,9 @@ export default function CheckoutDetails() {
           </div>
         </div>
       </div>
+
+      {/* Render the Toast Component at the bottom */}
+      <Toast message={toastMsg} type={toastType} onClose={() => setToastMsg("")} />
     </div>
   );
 }
