@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Apply to all endpoints
-                        .allowedOrigins("http://localhost:3000") // Allow Next.js
+                        .allowedOrigins("http://localhost:3000", "https://tiramisu-mu.vercel.app") // Allow Next.js
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Explicitly allow OPTIONS (Preflight)
                         .allowedHeaders("*")
                         .allowCredentials(true);
