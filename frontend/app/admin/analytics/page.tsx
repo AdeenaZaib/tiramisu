@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,8 +28,8 @@ export default function AnalyticsDashboard() {
       try {
         // Fetch both analytics numbers AND the full order list simultaneously
         const [analyticsRes, ordersRes] = await Promise.all([
-          fetch("http://localhost:8080/api/orders/analytics"),
-          fetch("http://localhost:8080/api/orders/all")
+          fetch(`${API_URL}/api/orders/analytics`),
+          fetch(`${API_URL}/api/orders/all`)
         ]);
 
         if (analyticsRes.ok) {

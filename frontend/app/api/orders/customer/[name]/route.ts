@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -11,7 +12,7 @@ export async function GET(
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
-    const res = await fetch(`http://localhost:8080/api/orders/customer/${name}`);
+    const res = await fetch(`${API_URL}/api/orders/customer/${name}`);
     
     if (!res.ok) {
       throw new Error('Failed to fetch orders');

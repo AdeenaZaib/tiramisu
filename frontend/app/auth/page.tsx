@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
+
 export default function AuthPage() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
@@ -23,8 +25,8 @@ export default function AuthPage() {
     setError("");
     setLoading(true);
     const url = isLogin
-      ? "http://localhost:8080/api/auth/login"
-      : "http://localhost:8080/api/auth/signup";
+      ? `${API_URL}/api/auth/login`
+      : `${API_URL}/api/auth/signup`;
     try {
       const res = await fetch(url, {
         method: "POST",

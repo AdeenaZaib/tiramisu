@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useEffect, useState } from "react";
 
@@ -37,7 +38,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/orders/all");
+      const res = await fetch(`${API_URL}/api/orders/all`);
       if (!res.ok) throw new Error("Failed to fetch orders");
       const data = await res.json();
       data.sort((a: Order, b: Order) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
@@ -54,7 +55,7 @@ export default function AdminDashboard() {
   const updateStatus = async (orderId: number, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_URL}/api/orders/${orderId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),

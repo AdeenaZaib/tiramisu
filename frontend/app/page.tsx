@@ -3,6 +3,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
+
 // Match the type from your backend
 type MenuItem = {
   id: number;
@@ -26,7 +28,7 @@ export default function HomePage() {
     window.addEventListener("scroll", handleScroll);
 
     // Fetch the real menu from the database
-    fetch("http://localhost:8080/api/menu/all")
+    fetch(`${API_URL}/api/menu/all`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch");
         return res.json();

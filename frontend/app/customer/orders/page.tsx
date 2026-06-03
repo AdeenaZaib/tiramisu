@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,7 +39,7 @@ export default function MyOrders() {
 
   const fetchMyOrders = async (name: string) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/customer/${encodeURIComponent(name)}`);
+      const res = await fetch(`${API_URL}/api/orders/customer/${encodeURIComponent(name)}`);
       const data = await res.json();
       
       // SATISFIES TC-04: Sorts by the date the order was PLACED (createdAt) newest first
@@ -64,7 +65,7 @@ export default function MyOrders() {
     if (!confirm("Are you sure you want to cancel this order?")) return;
     
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/${id}/cancel`, { 
+      const res = await fetch(`${API_URL}/api/orders/${id}/cancel`, { 
         method: "PUT" 
       });
       
@@ -89,7 +90,7 @@ export default function MyOrders() {
     }
 
     try {
-      const res = await fetch(`http://localhost:8080/api/orders/${id}/feedback`, {
+      const res = await fetch(`${API_URL}/api/orders/${id}/feedback`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating, feedback }),

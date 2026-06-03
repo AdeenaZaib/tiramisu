@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -34,7 +35,7 @@ export default function AddDishPage() {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:8080/api/menu/add", {
+      const res = await fetch(`${API_URL}/api/menu/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, price: parseFloat(form.price) }),

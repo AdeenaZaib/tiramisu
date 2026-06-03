@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function DELETE(request: NextRequest) {
@@ -9,7 +10,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 });
     }
 
-    const res = await fetch(`http://localhost:8080/api/menu/delete/${id}`, {
+    const res = await fetch(`${API_URL}/api/menu/delete/${id}`, {
       method: 'DELETE',
     });
 

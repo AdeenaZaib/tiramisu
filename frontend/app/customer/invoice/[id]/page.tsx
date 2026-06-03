@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -27,7 +28,7 @@ export default function InvoicePage() {
 
   useEffect(() => {
     // Fetch the specific order by ID
-    fetch(`http://localhost:8080/api/orders/${params.id}`)
+    fetch(`${API_URL}/api/orders/${params.id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Invoice not found");
         return res.json();

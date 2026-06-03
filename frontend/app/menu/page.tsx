@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -23,7 +24,7 @@ export default function PublicMenuPage() {
 
   // FETCH DATA FROM SPRING BOOT BACKEND
   useEffect(() => {
-    fetch("http://localhost:8080/api/menu/all")
+    fetch(`${API_URL}/api/menu/all`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch menu");
         return res.json();

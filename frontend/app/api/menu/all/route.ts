@@ -1,8 +1,9 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const res = await fetch('http://localhost:8080/api/menu/all');
+    const res = await fetch(`${API_URL}/api/menu/all`);
     if (!res.ok) {
       throw new Error('Failed to fetch menu items');
     }

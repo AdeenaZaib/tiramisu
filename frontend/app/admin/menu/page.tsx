@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -55,7 +56,7 @@ export default function AdminMenuPage() {
 
   const fetchMenu = () => {
     setLoading(true);
-    fetch("http://localhost:8080/api/menu/all")
+    fetch(`${API_URL}/api/menu/all`)
       .then(res => { if (!res.ok) throw new Error("Failed to fetch"); return res.json(); })
       .then((data: MenuItem[]) => {
         setItems(data);
@@ -106,7 +107,7 @@ export default function AdminMenuPage() {
     setSaving(true);
   
     try {
-      const res = await fetch(`http://localhost:8080/api/menu/update/${id}`, {
+      const res = await fetch(`${API_URL}/api/menu/update/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, ...editForm }),
@@ -129,7 +130,7 @@ export default function AdminMenuPage() {
 
   const deleteItem = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:8080/api/menu/delete/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_URL}/api/menu/delete/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       setItems(prev => prev.filter(i => i.id !== id));
       setDeleteConfirm(null);
@@ -143,7 +144,7 @@ export default function AdminMenuPage() {
     setAdding(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:8080/api/menu/add", {
+      const res = await fetch(`${API_URL}/api/menu/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(addForm),

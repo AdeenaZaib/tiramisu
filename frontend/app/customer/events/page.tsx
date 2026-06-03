@@ -1,3 +1,4 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -146,7 +147,7 @@ export default function MyEvents() {
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/orders/create", {
+      const res = await fetch(`${API_URL}/api/orders/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
