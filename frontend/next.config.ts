@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Remove the root or set relative path
   turbopack: {
-    root: ".",  // <-- use current project folder
+    root: ".",
+  },
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com",
   },
 };
 
