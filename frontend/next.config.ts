@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     root: ".",
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com",
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "https://tiramisu-sy4o.onrender.com",
   },
 };
 
