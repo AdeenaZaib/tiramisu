@@ -1,4 +1,3 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://tiramisu-sy4o.onrender.com";
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
